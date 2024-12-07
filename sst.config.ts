@@ -3,14 +3,20 @@
 export default $config({
   app(input) {
     return {
-      name: "monorepo-template",
-      removal: input?.stage === "production" ? "retain" : "remove",
-      home: "aws",
+      name: 'school',
+      removal: input?.stage === 'production' ? 'retain' : 'remove',
+      home: 'aws',
+      providers: {
+        aws: {
+          profile: 'trevor-dev',
+        },
+      },
     };
   },
   async run() {
-    await import("./infra/storage");
-    const api = await import("./infra/api");
+    await import('./infra/storage');
+    const api = await import('./infra/api');
+    await import('./infra/app');
 
     return {
       api: api.myApi.url,

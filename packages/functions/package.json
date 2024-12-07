@@ -1,9 +1,17 @@
 {
-  "name": "@monorepo-template/functions",
+  "name": "@school/functions",
   "version": "0.0.0",
+  "exports": {
+    "./*": [
+      "./src/*/index.ts",
+      "./src/*.ts"
+    ]
+  },
   "dependencies": {
-    "@monorepo-template/core": "*",
-    "sst": "*"
+    "@school/core": "*",
+    "@hono/valibot-validator": "^0.5.1",
+    "hono": "^4.6.12",
+    "sst": "3.3.50"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.137"

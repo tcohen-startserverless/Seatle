@@ -1,5 +1,5 @@
 {
-  "name": "@monorepo-template/core",
+  "name": "@school/core",
   "version": "0.0.0",
   "scripts": {
     "test": "sst shell vitest"
@@ -11,7 +11,10 @@
     ]
   },
   "dependencies": {
-    "sst": "*"
+    "electrodb": "^3.0.1",
+    "sst": "3.3.50",
+    "ulid": "^2.3.0",
+    "valibot": "^1.0.0-beta.9"
   },
   "devDependencies": {
     "vitest": "^2.0.3"
