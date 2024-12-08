@@ -2,9 +2,7 @@ import { vValidator } from '@hono/valibot-validator';
 import { Hono } from 'hono';
 import { SchoolSchemas, SchoolService } from '@core/school';
 
-const app = new Hono();
-
-app
+const app = new Hono()
   .post('/', vValidator('json', SchoolSchemas.CreateSchoolInput), async (c) => {
     const data = c.req.valid('json');
     const school = await SchoolService.create(data);
@@ -23,7 +21,7 @@ app
     }
     return c.json(school);
   })
-  .patch('/:schoolId', vValidator('json', SchoolSchemas.PatchSchoolInput), async (c) => {
+  .put('/:schoolId', vValidator('json', SchoolSchemas.PatchSchoolInput), async (c) => {
     const schoolId = c.req.param('schoolId');
     const data = c.req.valid('json');
     const updatedSchool = await SchoolService.patch(schoolId, data);

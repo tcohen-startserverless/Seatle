@@ -1,4 +1,4 @@
-import { Entity } from 'electrodb';
+import { Entity, EntityItem } from 'electrodb';
 import { Config } from '@core/dynamo';
 import { ulid } from 'ulid';
 
@@ -82,3 +82,5 @@ export const School = new Entity(
   },
   Config
 );
+
+export type SchoolItem = EntityItem<typeof School>;

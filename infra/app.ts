@@ -8,7 +8,6 @@ export const mobile = new sst.x.DevCommand('expo', {
   },
   link: [myApi],
   environment: {
-    EXPO_USE_METRO_WORKSPACE_ROOT: '1',
     EXPO_PUBLIC_API_URL: myApi.url,
   },
 });
