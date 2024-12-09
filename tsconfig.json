@@ -2,14 +2,16 @@
   "extends": "@tsconfig/node20/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "outDir": "./dist/",
     "paths": {
       "@core/*": ["packages/core/src/*"],
-      "@functions/*": ["packages/functions/src/*"]
+      "@functions/*": ["packages/functions/src/*"],
+      "@frontend/*": ["packages/frontend/src/*"]
     },
     "esModuleInterop": true,
     "skipLibCheck": true,
     "target": "es2022",
-    "allowJs": true,
+    // "allowJs": true,
     "resolveJsonModule": true,
     "moduleResolution": "bundler",
     "module": "ESNext",

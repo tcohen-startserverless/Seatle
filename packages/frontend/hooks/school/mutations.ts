@@ -1,6 +1,6 @@
-import { SchoolSchemas } from '@core/school';
+import { SchoolItem, SchoolSchemas } from '@core/school';
 import { useMutation, useQueryClient } from 'react-query';
-import { client } from '@frontend/api';
+import { client } from '@school/frontend/api';
 import { schoolKeys } from './keys';
 
 export const useCreateSchool = () => {
@@ -48,7 +48,7 @@ export const useUpdateSchool = (schoolId: string) => {
     {
       onMutate: async (updatedSchool) => {
         await queryClient.cancelQueries(schoolKeys.detail(schoolId));
-        const previousSchool = queryClient.getQueryData(
+        const previousSchool = queryClient.getQueryData<SchoolItem>(
           schoolKeys.detail(schoolId)
         );
         queryClient.setQueryData(schoolKeys.detail(schoolId), {

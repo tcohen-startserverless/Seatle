@@ -1,14 +1,17 @@
 {
-  "extends": "expo/tsconfig.base",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "strict": true,
     "jsx": "react-native",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "paths": {
       "@core/*": ["../core/src/*"],
-      "@frontend/*": ["./src/*"],
-      "@functions/*": ["../functions/src/*"]
-    }
+      "@functions/*": ["../functions/src/*"],
+      "@/*": ["./*"]
+    },
+    "baseUrl": ".",
+    "types": ["jest"]
   },
-  "include": ["./**/*", "env.d.ts"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "app/**/*.ts", "app/**/*.tsx"],
+  "exclude": ["node_modules", "./dist/**/*"]
 }

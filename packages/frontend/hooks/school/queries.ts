@@ -1,8 +1,8 @@
 import { useInfiniteQuery, useQuery } from 'react-query';
-import { client } from '@frontend/api';
+import { client } from '@school/frontend/api';
 import { schoolKeys } from './keys';
 import type { SchoolItem } from '@core/school';
-import type { ListApiResponse } from '../types';
+import type { ListApiResponse } from '@school/frontend/hooks/types';
 
 export const useSchools = () => {
   return useInfiniteQuery<ListApiResponse<SchoolItem>>(
