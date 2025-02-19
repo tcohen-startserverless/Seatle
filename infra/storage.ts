@@ -1,4 +1,17 @@
 export const bucket = new sst.aws.Bucket('MyBucket');
+
+export const authTable = new sst.aws.Dynamo('AuthTable', {
+  fields: {
+    pk: 'string',
+    sk: 'string',
+  },
+  ttl: 'expiry',
+  primaryIndex: {
+    hashKey: 'pk',
+    rangeKey: 'sk',
+  },
+});
+
 export const table = new sst.aws.Dynamo('MyTable', {
   fields: {
     pk: 'string',

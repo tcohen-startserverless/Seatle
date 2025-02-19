@@ -2,12 +2,12 @@ import { Entity, EntityItem } from 'electrodb';
 import { Config } from '@core/dynamo';
 import { ulid } from 'ulid';
 
-export const School = new Entity(
+export const Seat = new Entity(
   {
     model: {
-      entity: 'school',
+      entity: 'seat',
       version: '1',
-      service: '',
+      service: 'app',
     },
     attributes: {
       id: {
@@ -15,34 +15,33 @@ export const School = new Entity(
         required: true,
         default: () => ulid(),
       },
-      name: {
+      seatingId: {
         type: 'string',
         required: true,
       },
-      address: {
+      schoolId: {
         type: 'string',
-        required: false,
-      },
-      city: {
-        type: 'string',
-        required: false,
-      },
-      state: {
-        type: 'string',
-        required: false,
-      },
-      zipCode: {
-        type: 'string',
-        required: false,
-      },
-      phone: {
-        type: 'string',
-        required: false,
-      },
-      status: {
-        type: ['ACTIVE', 'INACTIVE', 'PENDING', 'SUSPENDED'] as const,
         required: true,
-        default: 'ACTIVE',
+      },
+      classId: {
+        type: 'string',
+        required: true,
+      },
+      studentId: {
+        type: 'string',
+        required: false,
+      },
+      x: {
+        type: 'number',
+        required: true,
+      },
+      y: {
+        type: 'number',
+        required: true,
+      },
+      label: {
+        type: 'string',
+        required: false,
       },
       createdAt: {
         type: 'number',
@@ -57,14 +56,24 @@ export const School = new Entity(
     },
     indexes: {
       primary: {
-        scope: 'school',
         pk: {
           field: 'pk',
-          composite: [],
+          composite: ['schoolId', 'classId', 'seatingId'],
         },
         sk: {
           field: 'sk',
           composite: ['id'],
+        },
+      },
+      byStudent: {
+        index: 'gsi1',
+        pk: {
+          field: 'gsi1pk',
+          composite: ['studentId'],
+        },
+        sk: {
+          field: 'gsi1sk',
+          composite: ['schoolId', 'classId', 'seatingId'],
         },
       },
     },
@@ -72,4 +81,4 @@ export const School = new Entity(
   Config
 );
 
-export type SchoolItem = EntityItem<typeof School>;
+export type SeatItem = EntityItem<typeof Seat>;

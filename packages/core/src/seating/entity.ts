@@ -2,12 +2,12 @@ import { Entity, EntityItem } from 'electrodb';
 import { Config } from '@core/dynamo';
 import { ulid } from 'ulid';
 
-export const School = new Entity(
+export const Seating = new Entity(
   {
     model: {
-      entity: 'school',
+      entity: 'seating',
       version: '1',
-      service: '',
+      service: 'app',
     },
     attributes: {
       id: {
@@ -15,32 +15,28 @@ export const School = new Entity(
         required: true,
         default: () => ulid(),
       },
+      schoolId: {
+        type: 'string',
+        required: true,
+      },
+      classId: {
+        type: 'string',
+        required: true,
+      },
       name: {
         type: 'string',
         required: true,
       },
-      address: {
-        type: 'string',
-        required: false,
+      rows: {
+        type: 'number',
+        required: true,
       },
-      city: {
-        type: 'string',
-        required: false,
-      },
-      state: {
-        type: 'string',
-        required: false,
-      },
-      zipCode: {
-        type: 'string',
-        required: false,
-      },
-      phone: {
-        type: 'string',
-        required: false,
+      columns: {
+        type: 'number',
+        required: true,
       },
       status: {
-        type: ['ACTIVE', 'INACTIVE', 'PENDING', 'SUSPENDED'] as const,
+        type: ['ACTIVE', 'ARCHIVED'] as const,
         required: true,
         default: 'ACTIVE',
       },
@@ -57,14 +53,24 @@ export const School = new Entity(
     },
     indexes: {
       primary: {
-        scope: 'school',
         pk: {
           field: 'pk',
-          composite: [],
+          composite: ['schoolId', 'classId'],
         },
         sk: {
           field: 'sk',
           composite: ['id'],
+        },
+      },
+      byClass: {
+        index: 'gsi1',
+        pk: {
+          field: 'gsi1pk',
+          composite: ['classId'],
+        },
+        sk: {
+          field: 'gsi1sk',
+          composite: ['status', 'id'],
         },
       },
     },
@@ -72,4 +78,4 @@ export const School = new Entity(
   Config
 );
 
-export type SchoolItem = EntityItem<typeof School>;
+export type SeatingItem = EntityItem<typeof Seating>;

@@ -3,7 +3,8 @@ import React from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+// import { IconSymbol } from '@/components/ui/IconSymbol';
+import { Home, Users, GraduationCap } from 'lucide-react';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -31,18 +32,21 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Home size={28} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="students"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
-          ),
+          title: 'Students',
+          tabBarIcon: ({ color }) => <Users size={28} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="class"
+        options={{
+          title: 'Class',
+          tabBarIcon: ({ color }) => <GraduationCap size={28} color={color} />,
         }}
       />
     </Tabs>

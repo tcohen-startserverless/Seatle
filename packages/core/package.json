@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "electrodb": "^3.0.1",
-    "sst": "3.3.50",
+    "sst": "3.4.5",
     "ulid": "^2.3.0",
     "valibot": "^1.0.0-beta.9"
   },
