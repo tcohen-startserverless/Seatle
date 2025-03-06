@@ -2,12 +2,12 @@ import { Entity, EntityItem } from 'electrodb';
 import { Config } from '@core/dynamo';
 import { ulid } from 'ulid';
 
-export const School = new Entity(
+export const Person = new Entity(
   {
     model: {
-      entity: 'school',
+      entity: 'person',
       version: '1',
-      service: '',
+      service: 'app',
     },
     attributes: {
       id: {
@@ -15,34 +15,13 @@ export const School = new Entity(
         required: true,
         default: () => ulid(),
       },
-      name: {
+      firstName: {
         type: 'string',
         required: true,
       },
-      address: {
+      lastName: {
         type: 'string',
-        required: false,
-      },
-      city: {
-        type: 'string',
-        required: false,
-      },
-      state: {
-        type: 'string',
-        required: false,
-      },
-      zipCode: {
-        type: 'string',
-        required: false,
-      },
-      phone: {
-        type: 'string',
-        required: false,
-      },
-      status: {
-        type: ['ACTIVE', 'INACTIVE', 'PENDING', 'SUSPENDED'] as const,
         required: true,
-        default: 'ACTIVE',
       },
       createdAt: {
         type: 'number',
@@ -57,10 +36,9 @@ export const School = new Entity(
     },
     indexes: {
       primary: {
-        scope: 'school',
         pk: {
           field: 'pk',
-          composite: [],
+          composite: ['userId'],
         },
         sk: {
           field: 'sk',
@@ -72,4 +50,4 @@ export const School = new Entity(
   Config
 );
 
-export type SchoolItem = EntityItem<typeof School>;
+export type PersonItem = EntityItem<typeof Person>;

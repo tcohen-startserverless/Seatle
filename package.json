@@ -10,7 +10,7 @@
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
     "prettier": "3.4.1",
-    "typescript": "^5.7.3"
+    "typescript": "^5.8.2"
   },
   "dependencies": {
     "sst": "3.4.5"

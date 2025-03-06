@@ -1,15 +1,13 @@
 import * as v from 'valibot';
 
-export namespace ClassSchemas {
+export namespace ChartSchemas {
   export const Create = v.object({
-    schoolId: v.string(),
     name: v.string(),
-    teacherId: v.string(),
-    period: v.optional(v.string()),
-    subject: v.optional(v.string()),
+    userId: v.string(),
+    id: v.optional(v.string()),
   });
 
-  export const Patch = v.partial(v.omit(Create, ['schoolId', 'teacherId']));
+  export const Patch = v.partial(v.omit(Create, ['userId']));
 
   export const Update = v.object;
 

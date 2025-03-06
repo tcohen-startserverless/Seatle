@@ -20,4 +20,18 @@ config.resolver.extraNodeModules = {
 config.resolver.disableHierarchicalLookup = true;
 config.resolver.unstable_enablePackageExports = true;
 
-module.exports = config;
+module.exports = {
+  ...config,
+  resolver: {
+    ...config.resolver,
+  },
+  transformer: {
+    ...config.transformer,
+    getTransformOptions: async () => ({
+      transform: {
+        experimentalImportSupport: false,
+        inlineRequires: true,
+      },
+    }),
+  },
+};

@@ -15,11 +15,7 @@ export const Seating = new Entity(
         required: true,
         default: () => ulid(),
       },
-      schoolId: {
-        type: 'string',
-        required: true,
-      },
-      classId: {
+      userId: {
         type: 'string',
         required: true,
       },
@@ -55,22 +51,11 @@ export const Seating = new Entity(
       primary: {
         pk: {
           field: 'pk',
-          composite: ['schoolId', 'classId'],
+          composite: ['userId'],
         },
         sk: {
           field: 'sk',
           composite: ['id'],
-        },
-      },
-      byClass: {
-        index: 'gsi1',
-        pk: {
-          field: 'gsi1pk',
-          composite: ['classId'],
-        },
-        sk: {
-          field: 'gsi1sk',
-          composite: ['status', 'id'],
         },
       },
     },

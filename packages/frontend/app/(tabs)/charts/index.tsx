@@ -4,7 +4,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { FAB } from '@/components/ui/FAB';
 
-export default function ClassesScreen() {
+export default function ChartsScreen() {
   const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
   const contentWidth = Math.min(800, screenWidth - 32);

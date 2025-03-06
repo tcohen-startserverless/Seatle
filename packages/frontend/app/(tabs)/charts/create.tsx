@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, GestureResponderEvent } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
@@ -6,17 +6,11 @@ import { Pressable } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ClassSchemas } from '@core/class';
 import { useCreateStudent } from '@/hooks/student/mutations';
-import { SeatingChart } from '@/components/SeatingChart/SeatingChart';
+import { FloorPlanEditor } from '@/components/FloorPlanEditor';
 import { ArrowLeft, Square } from 'lucide-react';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import { useState } from 'react';
-
-interface TablePosition {
-  id: string;
-  x: number;
-  y: number;
-  size: number;
-}
+import { TablePosition } from '@/components/FloorPlanEditor/types';
 
 const TABLE_SIZES = [
   { id: '1x1', size: 25, label: '1x1' },
@@ -66,6 +60,7 @@ export default function CreateClassScreen() {
       x: 0,
       y: 0,
       size,
+      cells: Math.pow(Math.floor(size / 25), 2),
     };
 
     if (hasCollision(newTable, tables)) {
@@ -118,7 +113,7 @@ export default function CreateClassScreen() {
       <View style={[styles.content]}>
         <View style={[styles.leftPanel, { borderRightColor: borderColor }]}>
           <View style={styles.header}>
-            <Pressable onPress={() => router.push('/students')} style={styles.backButton}>
+            <Pressable onPress={() => router.push('/people')} style={styles.backButton}>
               <ArrowLeft size={24} color={iconColor} />
             </Pressable>
             <ThemedText type="title">Create Seating Chart</ThemedText>
@@ -128,7 +123,7 @@ export default function CreateClassScreen() {
           </View>
         </View>
         <View style={styles.rightPanel}>
-          <SeatingChart tables={tables} onTableUpdate={setTables} edgePadding={32} />
+          <FloorPlanEditor tables={tables} onTableUpdate={setTables} edgePadding={32} />
         </View>
       </View>
     </ThemedView>

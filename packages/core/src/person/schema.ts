@@ -2,7 +2,6 @@ import * as v from 'valibot';
 
 export namespace StudentSchemas {
   export const CreateInput = v.object({
-    schoolId: v.string(),
     firstName: v.string(),
     lastName: v.string(),
   });
@@ -13,17 +12,17 @@ export namespace StudentSchemas {
   });
 
   export const GetInput = v.object({
-    schoolId: v.string(),
+    userId: v.string(),
     id: v.string(),
   });
 
   export const ListInput = v.object({
-    schoolId: v.string(),
+    userID: v.string(),
     cursor: v.optional(v.string()),
   });
 
   export const DeleteInput = v.object({
-    schoolId: v.string(),
+    userId: v.string(),
     id: v.string(),
   });
 

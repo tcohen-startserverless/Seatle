@@ -2,10 +2,10 @@ import { Entity, EntityItem } from 'electrodb';
 import { Config } from '@core/dynamo';
 import { ulid } from 'ulid';
 
-export const Student = new Entity(
+export const Chart = new Entity(
   {
     model: {
-      entity: 'student',
+      entity: 'chart',
       version: '1',
       service: 'app',
     },
@@ -15,17 +15,18 @@ export const Student = new Entity(
         required: true,
         default: () => ulid(),
       },
-      schoolId: {
+      userId: {
         type: 'string',
         required: true,
       },
-      firstName: {
+      name: {
         type: 'string',
         required: true,
       },
-      lastName: {
-        type: 'string',
+      status: {
+        type: ['ACTIVE', 'ARCHIVED'] as const,
         required: true,
+        default: 'ACTIVE',
       },
       createdAt: {
         type: 'number',
@@ -42,11 +43,22 @@ export const Student = new Entity(
       primary: {
         pk: {
           field: 'pk',
-          composite: ['schoolId'],
+          composite: ['userId'],
         },
         sk: {
           field: 'sk',
           composite: ['id'],
+        },
+      },
+      byTeacher: {
+        index: 'gsi1',
+        pk: {
+          field: 'gsi1pk',
+          composite: ['teacherId'],
+        },
+        sk: {
+          field: 'gsi1sk',
+          composite: ['status', 'id'],
         },
       },
     },
@@ -54,4 +66,4 @@ export const Student = new Entity(
   Config
 );
 
-export type StudentItem = EntityItem<typeof Student>;
+export type ChartItem = EntityItem<typeof Chart>;

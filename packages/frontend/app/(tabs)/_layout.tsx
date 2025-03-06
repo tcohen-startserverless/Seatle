@@ -36,16 +36,16 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="students"
+        name="people"
         options={{
-          title: 'Students',
+          title: 'People',
           tabBarIcon: ({ color }) => <Users size={28} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="class"
+        name="charts"
         options={{
-          title: 'Class',
+          title: 'Charts',
           tabBarIcon: ({ color }) => <GraduationCap size={28} color={color} />,
         }}
       />

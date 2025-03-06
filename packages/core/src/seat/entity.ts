@@ -15,19 +15,15 @@ export const Seat = new Entity(
         required: true,
         default: () => ulid(),
       },
+      userId: {
+        type: 'string',
+        required: true,
+      },
       seatingId: {
         type: 'string',
         required: true,
       },
-      schoolId: {
-        type: 'string',
-        required: true,
-      },
-      classId: {
-        type: 'string',
-        required: true,
-      },
-      studentId: {
+      personId: {
         type: 'string',
         required: false,
       },
@@ -41,6 +37,10 @@ export const Seat = new Entity(
       },
       label: {
         type: 'string',
+        required: false,
+      },
+      size: {
+        type: 'number',
         required: false,
       },
       createdAt: {
@@ -58,22 +58,22 @@ export const Seat = new Entity(
       primary: {
         pk: {
           field: 'pk',
-          composite: ['schoolId', 'classId', 'seatingId'],
+          composite: ['userId'],
         },
         sk: {
           field: 'sk',
-          composite: ['id'],
+          composite: ['seatingId', 'id'],
         },
       },
       byStudent: {
         index: 'gsi1',
         pk: {
           field: 'gsi1pk',
-          composite: ['studentId'],
+          composite: ['userId', 'personId'],
         },
         sk: {
           field: 'gsi1sk',
-          composite: ['schoolId', 'classId', 'seatingId'],
+          composite: ['seatingId', 'id'],
         },
       },
     },

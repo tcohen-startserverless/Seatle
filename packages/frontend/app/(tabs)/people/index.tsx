@@ -1,10 +1,10 @@
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
-import { StudentList } from '@/components/ui/StudentList';
+import { PeopleList } from '@/components/ui/PeopleList';
 import { ThemedView } from '@/components/ThemedView';
 import { useStudents } from '@/hooks/student/queries';
 import { ThemedText } from '@/components/ThemedText';
 
-export default function StudentScreen() {
+export default function PeopleScreen() {
   const { width } = useWindowDimensions();
   const contentWidth = Math.min(800, width - 32);
   const schoolId = '098';
@@ -29,7 +29,7 @@ export default function StudentScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.content, { width: contentWidth }]}>
-        <StudentList students={data?.pages[0]?.data ?? []} />
+        <PeopleList people={data?.pages[0]?.data ?? []} />
       </View>
     </ThemedView>
   );

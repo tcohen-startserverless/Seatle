@@ -1,23 +1,17 @@
 import { useCallback } from 'react';
-import {
-  StyleSheet,
-  FlatList,
-  Pressable,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { StyleSheet, FlatList, Pressable, View, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
-import { StudentItem } from '@core/student';
+import { PeopleItem } from '@core/People';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { FAB } from '@/components/ui/FAB';
 
-export interface StudentListProps {
-  students: StudentItem[];
+export interface PeopleListProps {
+  people: any[];
   width?: number;
 }
 
-export function StudentList({ students, width: propWidth }: StudentListProps) {
+export function PeopleList({ people, width: propWidth }: PeopleListProps) {
   const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
   const listWidth = propWidth ?? Math.min(800, screenWidth - 32);
@@ -26,20 +20,19 @@ export function StudentList({ students, width: propWidth }: StudentListProps) {
 
   const handlePersonPress = useCallback(
     (personId: string) => {
-      router.push(`/student/${personId}`);
+      router.push(`/People/${personId}`);
     },
     [router]
   );
 
   const renderItem = useCallback(
-    ({ item, index }: { item: StudentItem; index: number }) => (
+    ({ item, index }: { item: PeopleItem; index: number }) => (
       <View style={styles.itemWrapper}>
         <Pressable
           style={[
             styles.personItem,
             {
-              backgroundColor:
-                index % 2 === 0 ? backgroundColor : alternateBackground,
+              backgroundColor: index % 2 === 0 ? backgroundColor : alternateBackground,
             },
           ]}
           onPress={() => handlePersonPress(item.id)}
@@ -59,7 +52,7 @@ export function StudentList({ students, width: propWidth }: StudentListProps) {
     () => (
       <View style={styles.itemWrapper}>
         <View style={styles.header}>
-          <ThemedText type="title">Students</ThemedText>
+          <ThemedText type="title">Peoples</ThemedText>
         </View>
       </View>
     ),
@@ -70,7 +63,7 @@ export function StudentList({ students, width: propWidth }: StudentListProps) {
     <View style={styles.container}>
       <FlatList
         style={{ width: listWidth }}
-        data={students}
+        data={Peoples}
         renderItem={renderItem}
         ListHeaderComponent={ListHeader}
         keyExtractor={(item) => item.id}
@@ -78,7 +71,7 @@ export function StudentList({ students, width: propWidth }: StudentListProps) {
       />
       <View style={[styles.fabWrapper, { width: listWidth }]}>
         <View style={styles.fabContainer}>
-          <FAB onPress={() => router.push('/students/create')} />
+          <FAB onPress={() => router.push('/Peoples/create')} />
         </View>
       </View>
     </View>
