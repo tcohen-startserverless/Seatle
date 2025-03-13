@@ -3,6 +3,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { Service } from 'electrodb';
 import { Chart } from './chart';
+import { ContactList } from './contactList';
 import { Person } from './person';
 import { Seat } from './seat';
 import { Seating } from './seating';
@@ -19,6 +20,7 @@ export const Config = {
 export const DB = new Service(
   {
     Chart,
+    ContactList,
     Person,
     Seat,
     Seating,

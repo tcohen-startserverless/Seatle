@@ -19,7 +19,7 @@ export const Seat = new Entity(
         type: 'string',
         required: true,
       },
-      seatingId: {
+      chartId: {
         type: 'string',
         required: true,
       },
@@ -35,12 +35,32 @@ export const Seat = new Entity(
         type: 'number',
         required: true,
       },
+      width: {
+        type: 'number',
+        required: true,
+        default: 60,
+      },
+      height: {
+        type: 'number',
+        required: true,
+        default: 60,
+      },
+      rotation: {
+        type: 'number',
+        required: false,
+        default: 0,
+      },
+      type: {
+        type: ['TABLE', 'DESK', 'CHAIR', 'OTHER'] as const,
+        required: true,
+        default: 'CHAIR',
+      },
       label: {
         type: 'string',
         required: false,
       },
-      size: {
-        type: 'number',
+      notes: {
+        type: 'string',
         required: false,
       },
       createdAt: {
@@ -62,10 +82,10 @@ export const Seat = new Entity(
         },
         sk: {
           field: 'sk',
-          composite: ['seatingId', 'id'],
+          composite: ['chartId', 'id'],
         },
       },
-      byStudent: {
+      byPerson: {
         index: 'gsi1',
         pk: {
           field: 'gsi1pk',
@@ -73,7 +93,18 @@ export const Seat = new Entity(
         },
         sk: {
           field: 'gsi1sk',
-          composite: ['seatingId', 'id'],
+          composite: ['chartId', 'id'],
+        },
+      },
+      byChart: {
+        index: 'gsi2',
+        pk: {
+          field: 'gsi2pk',
+          composite: ['userId', 'chartId'],
+        },
+        sk: {
+          field: 'gsi2sk',
+          composite: ['type', 'id'],
         },
       },
     },

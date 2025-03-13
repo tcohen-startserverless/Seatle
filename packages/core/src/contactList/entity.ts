@@ -2,10 +2,10 @@ import { Entity, EntityItem } from 'electrodb';
 import { Config } from '@core/dynamo';
 import { ulid } from 'ulid';
 
-export const Chart = new Entity(
+export const ContactList = new Entity(
   {
     model: {
-      entity: 'chart',
+      entity: 'contactList',
       version: '1',
       service: 'app',
     },
@@ -27,15 +27,10 @@ export const Chart = new Entity(
         type: 'string',
         required: false,
       },
-      width: {
-        type: 'number',
-        required: true,
-        default: 800,
-      },
-      height: {
-        type: 'number',
-        required: true,
-        default: 600,
+      personIds: {
+        type: 'list',
+        items: 'string',
+        required: false,
       },
       status: {
         type: ['ACTIVE', 'ARCHIVED'] as const,
@@ -80,4 +75,4 @@ export const Chart = new Entity(
   Config
 );
 
-export type ChartItem = EntityItem<typeof Chart>;
+export type ContactListItem = EntityItem<typeof ContactList>;

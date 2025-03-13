@@ -1,4 +1,4 @@
-import { myApi } from './api';
+import { api } from './api';
 
 export const mobile = new sst.x.DevCommand('expo', {
   dev: {
@@ -6,9 +6,9 @@ export const mobile = new sst.x.DevCommand('expo', {
     directory: 'packages/frontend',
     autostart: true,
   },
-  link: [myApi],
+  link: [api],
   environment: {
-    EXPO_PUBLIC_API_URL: myApi.url,
+    EXPO_PUBLIC_API_URL: api.url,
   },
 });
 

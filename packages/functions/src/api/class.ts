@@ -12,4 +12,4 @@ const app = new Hono().post(
   }
 );
 
-expork default app;
+export default app;

@@ -15,6 +15,10 @@ export const Person = new Entity(
         required: true,
         default: () => ulid(),
       },
+      userId: {
+        type: 'string',
+        required: true,
+      },
       firstName: {
         type: 'string',
         required: true,
@@ -22,6 +26,18 @@ export const Person = new Entity(
       lastName: {
         type: 'string',
         required: true,
+      },
+      email: {
+        type: 'string',
+        required: false,
+      },
+      phone: {
+        type: 'string',
+        required: false,
+      },
+      notes: {
+        type: 'string',
+        required: false,
       },
       createdAt: {
         type: 'number',
@@ -43,6 +59,17 @@ export const Person = new Entity(
         sk: {
           field: 'sk',
           composite: ['id'],
+        },
+      },
+      byName: {
+        index: 'gsi1',
+        pk: {
+          field: 'gsi1pk',
+          composite: ['userId'],
+        },
+        sk: {
+          field: 'gsi1sk',
+          composite: ['lastName', 'firstName'],
         },
       },
     },

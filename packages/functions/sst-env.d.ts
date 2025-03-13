@@ -2,30 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 /* deno-fmt-ignore-file */
+
+/// <reference path="../../sst-env.d.ts" />
+
 import "sst"
 export {}
-declare module "sst" {
-  export interface Resource {
-    "Auth": {
-      "type": "sst.aws.Auth"
-      "url": string
-    }
-    "AuthTable": {
-      "name": string
-      "type": "sst.aws.Dynamo"
-    }
-    "MyApi": {
-      "name": string
-      "type": "sst.aws.Function"
-      "url": string
-    }
-    "MyBucket": {
-      "name": string
-      "type": "sst.aws.Bucket"
-    }
-    "MyTable": {
-      "name": string
-      "type": "sst.aws.Dynamo"
-    }
-  }
-}

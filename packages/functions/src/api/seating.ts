@@ -1,5 +1,6 @@
 import { vValidator } from '@hono/valibot-validator';
 import { Hono } from 'hono';
+import * as v from 'valibot';
 import { SeatingSchemas, SeatingService } from '@core/seating';
 import { SeatSchemas, SeatService } from '@core/seat';
 
@@ -21,21 +22,7 @@ const app = new Hono()
       userId,
       id,
     });
-
-    const seats = await SeatService.list({
-      schoolId,
-      classId,
-      seatingId: id,
-    });
-
-    if (!seating) {
-      return c.json({ message: 'Seating arrangement not found' }, 404);
-    }
-
-    return c.json({
-      ...seating,
-      seats: seats.data,
-    });
+    return c.json(seating);
   })
   .patch(
     '/:id',
@@ -64,7 +51,6 @@ const app = new Hono()
     return c.json(result);
   });
 
-// Seats sub-routes
 app.route(
   '/:seatingId/seats',
   new Hono()
