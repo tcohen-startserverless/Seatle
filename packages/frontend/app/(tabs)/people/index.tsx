@@ -7,8 +7,7 @@ import { ThemedText } from '@/components/ThemedText';
 export default function PeopleScreen() {
   const { width } = useWindowDimensions();
   const contentWidth = Math.min(800, width - 32);
-  const schoolId = '098';
-  const { data, isLoading, error } = useStudents(schoolId);
+  const { data, isLoading, error } = useStudents();
 
   if (isLoading) {
     return (

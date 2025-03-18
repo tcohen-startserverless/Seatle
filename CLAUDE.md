@@ -1,6 +1,7 @@
-# School Project Helper
+# Seater Project Helper
 
 ## Commands
+
 - **Dev Server**: `bun run dev` (runs SST dev server)
 - **Frontend Dev**: `cd packages/frontend && bun run start` (Expo)
 - **Frontend Tests**: `cd packages/frontend && bun test`
@@ -9,6 +10,7 @@
 - **Frontend Lint**: `cd packages/frontend && bun run lint`
 
 ## Code Style
+
 - **Types**: Strict TypeScript with noUncheckedIndexedAccess and noImplicitOverride
 - **Styling**: React Native with theme hooks for consistent styling
 - **API**: Hono with valibot for validation
@@ -20,4 +22,5 @@
 - **Component Structure**: Functional components with hooks for state/effects
 
 ## Notes
+
 - Built on SST (Serverless Stack) infrastructure with Expo frontend

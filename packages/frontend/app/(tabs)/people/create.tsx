@@ -14,8 +14,7 @@ export default function CreateStudentScreen() {
   const iconColor = useThemeColor({}, 'text');
   const { width: screenWidth } = useWindowDimensions();
   const contentWidth = Math.min(800, screenWidth - 32);
-  const schoolId = '098';
-  const createMutation = useCreateStudent(schoolId);
+  const createMutation = useCreateStudent();
 
   const handleCreateStudent = async (values: StudentSchemas.Types.CreateInput) => {
     try {

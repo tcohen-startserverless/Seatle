@@ -2,19 +2,9 @@ import { createClient } from '@openauthjs/openauth/client';
 import { createMiddleware } from 'hono/factory';
 import { subjects } from './subjects';
 
-type UserSubject = {
-  type: 'user';
-  properties: {
-    userId: string;
-    email: string;
-    role?: string;
-    schoolId?: string;
-  };
-};
-
 export const authMiddleware = (options?: { requireAuth?: boolean }) => {
   const authClient = createClient({
-    clientID: 'school-app',
+    clientID: 'seater',
     issuer: process.env.AUTH_URL || '',
   });
 

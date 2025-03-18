@@ -14,7 +14,6 @@ export namespace UserSchemas {
     email: v.pipe(v.string('email is required'), v.email()),
     firstName: v.string('firstName is required'),
     lastName: v.string('lastName is required'),
-    schoolId: v.optional(v.string()),
     role: Role,
     status: v.optional(Status),
     createdAt: v.optional(v.number()),

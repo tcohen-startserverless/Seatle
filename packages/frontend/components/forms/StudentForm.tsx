@@ -14,7 +14,6 @@ export function StudentForm({ onSubmit, isSubmitting }: StudentFormProps) {
     defaultValues: {
       firstName: '',
       lastName: '',
-      schoolId: '098', // TODO: Get from context
     },
     validators: {
       // onChange: StudentSchemas.CreateInput,

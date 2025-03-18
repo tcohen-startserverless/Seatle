@@ -1,5 +1,5 @@
 {
-  "name": "school",
+  "name": "seater",
   "version": "0.0.0",
   "workspaces": [
     "packages/*"

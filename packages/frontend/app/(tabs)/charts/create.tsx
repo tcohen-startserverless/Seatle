@@ -22,7 +22,6 @@ export default function CreateClassScreen() {
   const router = useRouter();
   const iconColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({}, 'border');
-  const schoolId = '098';
   const createMutation = useCreateStudent(schoolId);
   const [tables, setTables] = useState<TablePosition[]>([]);
 

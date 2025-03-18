@@ -1,5 +1,5 @@
 {
-  "name": "@school/functions",
+  "name": "@seater/functions",
   "version": "0.0.0",
   "exports": {
     "./*": [
@@ -11,7 +11,7 @@
     "@hono/valibot-validator": "^0.5.1",
     "@openauthjs/openauth": "^0.4.3",
     "@aws-sdk/client-sesv2": "^3.350.0",
-    "@school/core": "*",
+    "@seater/core": "*",
     "hono": "^4.6.12",
     "sst": "*",
     "valibot": "^1.0.0-beta.9"

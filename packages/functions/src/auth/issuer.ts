@@ -30,7 +30,7 @@ export const app = issuer({
 
             await EmailService.send({
               to: email,
-              subject: 'Your School App Verification Code',
+              subject: 'Your Seater App Verification Code',
               react: CodeEmail({
                 code,
                 userName,

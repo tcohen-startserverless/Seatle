@@ -13,8 +13,8 @@ config.resolver.nodeModulesPaths = [
 ];
 
 config.resolver.extraNodeModules = {
-  '@school/core': path.resolve(monorepoRoot, 'packages/core'),
-  '@school/functions': path.resolve(monorepoRoot, 'packages/functions'),
+  '@seater/core': path.resolve(monorepoRoot, 'packages/core'),
+  '@seater/functions': path.resolve(monorepoRoot, 'packages/functions'),
 };
 
 config.resolver.disableHierarchicalLookup = true;

@@ -3,7 +3,7 @@
 export default $config({
   app(input) {
     return {
-      name: 'school',
+      name: 'seater',
       removal: input?.stage === 'production' ? 'retain' : 'remove',
       home: 'aws',
       providers: {

@@ -18,7 +18,6 @@ export namespace SeatingSchemas {
   });
 
   export const ListInput = v.object({
-    schoolId: v.string(),
     classId: v.string(),
     cursor: v.optional(v.string()),
   });
