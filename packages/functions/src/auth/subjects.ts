@@ -1,13 +1,11 @@
-import { createSubjects } from '@openauthjs/openauth';
 import { object, string, optional } from 'valibot';
 
-export const subjects = createSubjects({
+export const subjects = {
   user: object({
-    userId: string(),
+    id: string(),
     email: string(),
-    schoolId: optional(string()),
-    role: optional(string())
+    role: optional(string()),
   }),
-});
+};
 
 export type Subjects = typeof subjects;

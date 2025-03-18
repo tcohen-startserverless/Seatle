@@ -10,7 +10,7 @@ export const User = new Entity(
       service: '',
     },
     attributes: {
-      userId: {
+      id: {
         type: 'string',
         required: true,
         default: () => ulid(),
@@ -26,10 +26,6 @@ export const User = new Entity(
       lastName: {
         type: 'string',
         required: true,
-      },
-      schoolId: {
-        type: 'string',
-        required: false,
       },
       role: {
         type: ['TEACHER', 'ADMIN', 'STUDENT'] as const,
@@ -60,7 +56,7 @@ export const User = new Entity(
         },
         sk: {
           field: 'sk',
-          composite: ['userId'],
+          composite: ['id'],
         },
       },
       byEmail: {
@@ -72,17 +68,6 @@ export const User = new Entity(
         sk: {
           field: 'gsi1sk',
           composite: [],
-        },
-      },
-      bySchool: {
-        index: 'gsi2',
-        pk: {
-          field: 'gsi2pk',
-          composite: ['schoolId'],
-        },
-        sk: {
-          field: 'gsi2sk',
-          composite: ['role', 'userId'],
         },
       },
     },

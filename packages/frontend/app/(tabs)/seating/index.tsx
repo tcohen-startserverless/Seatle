@@ -11,11 +11,10 @@ import { Button } from '@/components/Button';
 export default function SeatingScreen() {
   const router = useRouter();
   const iconColor = useThemeColor({}, 'text');
-  
-  // Hard-coded values for now - would come from context in a real app
+
   const schoolId = '123';
   const classId = '456';
-  
+
   const { data: seatingList, isLoading, error } = useListSeating({ schoolId, classId });
 
   const handleCreateNew = () => {

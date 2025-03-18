@@ -22,36 +22,28 @@ export default function CreateSeatingScreen() {
   const iconColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({}, 'border');
   const createMutation = useCreateSeating();
-  
-  // Hard-coded values for now - would come from context or params in a real app
-  const schoolId = '123';
-  const classId = '456';
-  
+
   const [name, setName] = useState('New Seating Chart');
   const [tables, setTables] = useState<TablePosition[]>([]);
 
   const handleSave = async () => {
     try {
-      // Map table positions to seat entities
-      const seats = tables.map(table => ({
-        schoolId,
-        classId,
+      const seats = tables.map((table) => ({
         x: table.x,
         y: table.y,
         size: table.size,
       }));
-      
+
       await createMutation.mutateAsync({
         seating: {
-          schoolId,
-          classId,
+          userId: '123',
           name,
           rows: 60,
           columns: 60,
         },
         seats,
       });
-      
+
       router.back();
     } catch (error) {
       console.error('Failed to create seating chart', error);
@@ -61,7 +53,7 @@ export default function CreateSeatingScreen() {
   const hasCollision = (tableToCheck: TablePosition, allTables: TablePosition[]) => {
     for (const table of allTables) {
       if (table.id === tableToCheck.id) continue;
-      
+
       const rect1 = {
         left: tableToCheck.x,
         right: tableToCheck.x + Math.floor(tableToCheck.size / 25),
@@ -152,7 +144,7 @@ export default function CreateSeatingScreen() {
             </Pressable>
             <ThemedText type="title">Create Seating Chart</ThemedText>
           </View>
-          
+
           <View style={styles.nameInputContainer}>
             <ThemedText>Chart Name:</ThemedText>
             <TextInput
@@ -162,13 +154,13 @@ export default function CreateSeatingScreen() {
               placeholder="Enter chart name"
             />
           </View>
-          
+
           <View style={styles.sections}>
             <CollapsibleSection title="Tables">{renderTableOptions()}</CollapsibleSection>
           </View>
-          
+
           <View style={styles.footer}>
-            <Button 
+            <Button
               onPress={handleSave}
               disabled={createMutation.isPending || tables.length === 0 || !name}
               icon={<Save size={20} color="white" />}

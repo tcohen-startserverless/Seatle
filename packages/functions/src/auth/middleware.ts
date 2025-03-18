@@ -2,7 +2,17 @@ import { createClient } from '@openauthjs/openauth/client';
 import { createMiddleware } from 'hono/factory';
 import { subjects } from './subjects';
 
-export const authMiddleware = () => {
+type UserSubject = {
+  type: 'user';
+  properties: {
+    userId: string;
+    email: string;
+    role?: string;
+    schoolId?: string;
+  };
+};
+
+export const authMiddleware = (options?: { requireAuth?: boolean }) => {
   const authClient = createClient({
     clientID: 'school-app',
     issuer: process.env.AUTH_URL || '',
@@ -10,31 +20,31 @@ export const authMiddleware = () => {
 
   return createMiddleware(async (c, next) => {
     const authHeader = c.req.header('Authorization');
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      // Allow the request to continue without authentication
-      // You can customize this to reject unauthorized requests
+      if (options?.requireAuth) {
+        return c.json({ error: 'Unauthorized' }, 401);
+      }
       await next();
       return;
     }
 
     const token = authHeader.substring(7);
-    
-    try {
-      const verified = await authClient.verify(subjects, token);
-      
-      if (verified.subject) {
-        // Add user info to context
-        c.set('userId', verified.subject.properties.userId);
-        c.set('userEmail', verified.subject.properties.email);
-        c.set('userRole', verified.subject.properties.role || 'user');
-        c.set('schoolId', verified.subject.properties.schoolId);
-      }
-    } catch (error) {
-      console.error('Auth verification failed:', error);
-      // Continue without setting user info
+
+    const verified = await authClient.verify(subjects, token);
+    if (verified.err) {
+      console.log('Token verification failed:', verified.err);
+      return c.json({ error: 'Unauthorized' }, 401);
     }
-    
+    if (verified.subject.type === 'user' && verified.subject.properties) {
+      const { id, email, role } = verified.subject.properties;
+      c.set('userId', id);
+      c.set('userEmail', email);
+      c.set('userRole', role || 'user');
+    }
+    if (verified.tokens) {
+      c.header('X-Auth-Token', verified.tokens.access);
+    }
     await next();
   });
 };

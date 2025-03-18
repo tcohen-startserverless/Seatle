@@ -27,6 +27,11 @@ declare module "sst" {
       "type": "sst.aws.Function"
       "url": string
     }
+    "email": {
+      "configSet": string
+      "sender": string
+      "type": "sst.aws.Email"
+    }
   }
 }
 /// <reference path="sst-env.d.ts" />

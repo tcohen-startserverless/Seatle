@@ -15,6 +15,7 @@ export default $config({
   },
   async run() {
     await import('./infra/storage');
+    await import('./infra/email');
     await import('./infra/auth');
     await import('./infra/api');
     await import('./infra/app');

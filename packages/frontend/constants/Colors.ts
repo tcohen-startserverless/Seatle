@@ -18,6 +18,7 @@ export const Colors = {
     border: '#E6E8EB',
     primaryRow: '#fff',
     alternateRow: 'rgba(10, 126, 164, 0.1)',
+    card: '#ffffff',
   },
   dark: {
     text: '#ECEDEE',
@@ -29,5 +30,6 @@ export const Colors = {
     border: '#2F3336',
     primaryRow: '#1f2123',
     alternateRow: 'rgba(255, 255, 255, 0.1)',
+    card: '#1f2123',
   },
 };

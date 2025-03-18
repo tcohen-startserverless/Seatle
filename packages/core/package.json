@@ -2,7 +2,8 @@
   "name": "@school/core",
   "version": "0.0.0",
   "scripts": {
-    "test": "sst shell vitest"
+    "test": "sst shell vitest",
+    "email": "email dev --dir templates"
   },
   "exports": {
     "./*": [
@@ -11,12 +12,15 @@
     ]
   },
   "dependencies": {
+    "@aws-sdk/client-sesv2": "^3.758.0",
+    "@react-email/components": "0.0.34",
     "electrodb": "^3.0.1",
-    "sst": "3.9.33",
+    "sst": "*",
     "ulid": "^2.3.0",
     "valibot": "^1.0.0-beta.9"
   },
   "devDependencies": {
+    "react-email": "3.0.7",
     "vitest": "^2.0.3"
   }
 }

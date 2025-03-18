@@ -12,6 +12,6 @@
     "baseUrl": ".",
     "types": ["jest"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "app/**/*.ts", "app/**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", "./dist/**/*"]
 }
