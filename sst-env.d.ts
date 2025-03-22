@@ -5,6 +5,10 @@
 
 declare module "sst" {
   export interface Resource {
+    "Auth": {
+      "type": "sst.aws.Auth"
+      "url": string
+    }
     "MyBucket": {
       "name": string
       "type": "sst.aws.Bucket"
@@ -17,15 +21,6 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Function"
       "url": string
-    }
-    "authApi": {
-      "name": string
-      "type": "sst.aws.Function"
-      "url": string
-    }
-    "authTable": {
-      "name": string
-      "type": "sst.aws.Dynamo"
     }
     "email": {
       "configSet": string

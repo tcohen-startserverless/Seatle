@@ -9,19 +9,10 @@ import { DynamoStorage } from '@openauthjs/openauth/storage/dynamo';
 import { subjects } from '@core/auth/subjects';
 import { UserService } from '@core/user';
 
-const getOrCreateUser = async (email: string) => {
-  const user = await UserService.getByEmail(email);
-  if (!user) {
-    const newUser = await UserService.create({
-      email,
-      role: 'USER',
-    });
-    return newUser;
-  }
-  return user;
-};
-
 const app = issuer({
+  allow: async (req) => {
+    return true;
+  },
   providers: {
     code: CodeProvider(
       CodeUI({
@@ -38,9 +29,11 @@ const app = issuer({
         sendCode: async (claims, code) => {
           try {
             const email = claims.email;
-            if (!email) return;
+            if (!email) {
+              console.error('No email in claims:', claims);
+              return;
+            }
             const userName = email.split('@')[0] || 'User';
-
             await EmailService.send({
               to: email,
               subject: 'Your Seater App Verification Code',
@@ -50,11 +43,6 @@ const app = issuer({
                 expiryTime: '10 minutes',
               }),
             });
-
-            if (process.env.NODE_ENV !== 'production') {
-              console.log(`[DEV] Verification code for ${email}: ${code}`);
-            }
-
             return;
           } catch (error) {
             console.error('Error sending verification code:', error);
@@ -65,13 +53,10 @@ const app = issuer({
     ),
   },
   subjects,
-  storage: DynamoStorage({
-    table: Resource.authTable.name,
-  }),
   async success(ctx, value) {
     const email = value.claims.email;
     if (!email) throw new Error('Missing email in claims');
-    const user = await getOrCreateUser(email);
+    const user = await UserService.getOrCreateUser(email);
     if (!user) throw new Error('User not found');
     if (value.provider === 'code') {
       return ctx.subject('user', {

@@ -1,5 +1,5 @@
 import { api } from './api';
-import { authApi } from './auth';
+import { auth } from './auth';
 
 export const mobile = new sst.x.DevCommand('expo', {
   dev: {
@@ -8,10 +8,9 @@ export const mobile = new sst.x.DevCommand('expo', {
     autostart: true,
     title: 'Seater App',
   },
-  link: [api],
   environment: {
     EXPO_PUBLIC_API_URL: api.url,
-    EXPO_PUBLIC_AUTH_URL: authApi.url,
+    EXPO_PUBLIC_AUTH_URL: auth.url,
   },
 });
 

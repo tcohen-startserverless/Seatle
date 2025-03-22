@@ -1,25 +1,9 @@
-import { table } from './storage';
 import { email } from './email';
+import { table } from './storage';
 
-export const authTable = new sst.aws.Dynamo('authTable', {
-  fields: {
-    pk: 'string',
-    sk: 'string',
+export const auth = new sst.aws.Auth('Auth', {
+  issuer: {
+    handler: 'packages/functions/src/auth/index.handler',
+    link: [table, email],
   },
-  primaryIndex: {
-    hashKey: 'pk',
-    rangeKey: 'sk',
-  },
-});
-
-export const authApi = new sst.aws.Function('authApi', {
-  handler: 'packages/functions/src/auth/index.handler',
-  link: [authTable, table, email],
-  permissions: [
-    {
-      actions: ['ses:SendEmail', 'ses:SendRawEmail'],
-      resources: ['*'],
-    },
-  ],
-  url: true,
 });

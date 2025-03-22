@@ -59,7 +59,7 @@ export const User = new Entity({
       },
     },
     byEmail: {
-      index: 'gsi1',
+      index: 'GSI1',
       pk: {
         field: 'gsi1pk',
         composite: ['email'],

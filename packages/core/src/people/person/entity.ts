@@ -60,7 +60,7 @@ export const Person = new Entity({
       },
     },
     byName: {
-      index: 'gsi1',
+      index: 'GSI1',
       pk: {
         field: 'gsi1pk',
         composite: ['userId'],

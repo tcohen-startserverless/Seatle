@@ -53,7 +53,7 @@ export const List = new Entity({
       },
     },
     byStatus: {
-      index: 'gsi1',
+      index: 'GSI1',
       pk: {
         field: 'gsi1pk',
         composite: ['userId'],

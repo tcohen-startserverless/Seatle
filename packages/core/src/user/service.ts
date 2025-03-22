@@ -7,6 +7,18 @@ export namespace UserService {
     return res.data;
   };
 
+  export const getOrCreateUser = async (email: string) => {
+    const user = await UserService.getByEmail(email);
+    if (!user) {
+      const newUser = await UserService.create({
+        email,
+        role: 'USER',
+      });
+      return newUser;
+    }
+    return user;
+  };
+
   export const getById = async ({ id }: { id: string }) => {
     const res = await DB.entities.User.get({ id }).go();
     return res.data;

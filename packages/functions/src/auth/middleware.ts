@@ -1,6 +1,6 @@
 import { createClient } from '@openauthjs/openauth/client';
 import { createMiddleware } from 'hono/factory';
-import { subjects } from './subjects';
+import { subjects } from '@core/auth/subjects';
 
 export const authMiddleware = (options?: { requireAuth?: boolean }) => {
   const authClient = createClient({

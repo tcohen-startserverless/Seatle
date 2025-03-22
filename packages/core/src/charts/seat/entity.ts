@@ -84,7 +84,7 @@ export const Seat = new Entity({
       },
     },
     byPerson: {
-      index: 'gsi1',
+      index: 'GSI1',
       pk: {
         field: 'gsi1pk',
         composite: ['userId', 'personId'],
@@ -95,7 +95,7 @@ export const Seat = new Entity({
       },
     },
     byChart: {
-      index: 'gsi2',
+      index: 'GSI2',
       pk: {
         field: 'gsi2pk',
         composite: ['userId', 'chartId'],

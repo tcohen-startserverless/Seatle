@@ -1,11 +1,9 @@
 import { createClient } from '@openauthjs/openauth/client';
-import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { subjects } from '@core/auth';
 
 export const openAuthClient = createClient({
-  clientID: 'seater-mobile',
+  clientID: 'seater-web',
   issuer: process.env.EXPO_PUBLIC_AUTH_URL,
 });
 
@@ -15,32 +13,21 @@ const CHALLENGE_KEY = 'auth_challenge';
 
 const Storage = {
   async setItem(key: string, value: string) {
-    if (Platform.OS === 'web') {
-      await AsyncStorage.setItem(key, value);
-    } else {
-      await SecureStore.setItemAsync(key, value);
-    }
+    await AsyncStorage.setItem(key, value);
   },
 
   async getItem(key: string) {
-    if (Platform.OS === 'web') {
-      return await AsyncStorage.getItem(key);
-    } else {
-      return await SecureStore.getItemAsync(key);
-    }
+    return await AsyncStorage.getItem(key);
   },
 
   async removeItem(key: string) {
-    if (Platform.OS === 'web') {
-      await AsyncStorage.removeItem(key);
-    } else {
-      await SecureStore.deleteItemAsync(key);
-    }
+    await AsyncStorage.removeItem(key);
   },
 };
 
 export const AuthStorage = {
   async storeTokens(tokens: { access: string; refresh: string }) {
+    console.log('Storing auth tokens');
     await Promise.all([
       Storage.setItem(ACCESS_TOKEN_KEY, tokens.access),
       Storage.setItem(REFRESH_TOKEN_KEY, tokens.refresh),
@@ -56,19 +43,24 @@ export const AuthStorage = {
   },
 
   async storeChallenge(challenge: any) {
+    console.log('Storing PKCE challenge');
     await Storage.setItem(CHALLENGE_KEY, JSON.stringify(challenge));
   },
 
   async getChallenge() {
     const challenge = await Storage.getItem(CHALLENGE_KEY);
-    return challenge ? JSON.parse(challenge) : null;
+    const parsed = challenge ? JSON.parse(challenge) : null;
+    console.log('Retrieved challenge:', parsed ? 'found' : 'not found');
+    return parsed;
   },
 
   async clearChallenge() {
+    console.log('Clearing PKCE challenge');
     await Storage.removeItem(CHALLENGE_KEY);
   },
 
   async clearAuth() {
+    console.log('Clearing all auth data');
     await Promise.all([
       Storage.removeItem(ACCESS_TOKEN_KEY),
       Storage.removeItem(REFRESH_TOKEN_KEY),
@@ -77,7 +69,13 @@ export const AuthStorage = {
   },
 };
 
-export async function getCurrentUser() {
+export type UserSubject = {
+  id: string;
+  email: string;
+  role?: string;
+};
+
+export async function getCurrentUser(): Promise<UserSubject | null> {
   const { access, refresh } = await AuthStorage.getTokens();
 
   if (!access) return null;
@@ -97,7 +95,7 @@ export async function getCurrentUser() {
     }
 
     if (verified.subject.type === 'user' && verified.subject.properties) {
-      return verified.subject.properties;
+      return verified.subject.properties as UserSubject;
     }
 
     return null;
