@@ -1,13 +1,12 @@
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { PeopleList } from '@/components/ui/PeopleList';
 import { ThemedView } from '@/components/ThemedView';
-import { useStudents } from '@/hooks/student/queries';
 import { ThemedText } from '@/components/ThemedText';
 
 export default function PeopleScreen() {
   const { width } = useWindowDimensions();
   const contentWidth = Math.min(800, width - 32);
-  const { data, isLoading, error } = useStudents();
+  const { data, isLoading, error } = { data: [], isLoading: false, error: null };
 
   if (isLoading) {
     return (

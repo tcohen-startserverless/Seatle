@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { client } from '@school/frontend/api';
+import { client } from '@seater/frontend/api';
 import { seatingKeys } from './keys';
 
 export function useListSeating({
@@ -38,11 +38,11 @@ export function useGetSeating({
         param: { seatingId },
         query: { schoolId, classId },
       });
-      
+
       if (!response.ok) {
         throw new Error(`Seating not found: ${seatingId}`);
       }
-      
+
       return await response.json();
     },
     enabled,

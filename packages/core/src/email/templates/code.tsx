@@ -24,7 +24,7 @@ export default function CodeEmail({
   return (
     <Html>
       <Head />
-      <Preview>Your verification code for School App</Preview>
+      <Preview>Your verification code for Seater App</Preview>
       <Body style={styles.body}>
         <Container style={styles.container}>
           <Heading style={styles.heading}>Verification Code</Heading>
@@ -40,7 +40,7 @@ export default function CodeEmail({
             If you didn't request this code, please ignore this email.
           </Text>
           <Text style={styles.footer}>
-            &copy; {new Date().getFullYear()} School App. All rights reserved.
+            &copy; {new Date().getFullYear()} Seater App. All rights reserved.
           </Text>
         </Container>
       </Body>

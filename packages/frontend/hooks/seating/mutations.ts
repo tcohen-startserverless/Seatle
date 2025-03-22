@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { client } from '@school/frontend/api';
-import { SeatingSchemas } from '@core/seating';
-import { SeatSchemas } from '@core/seat';
+import { client } from '@seater/frontend/api';
+import { SeatingSchemas } from '@core/charts/seating';
+import { SeatSchemas } from '@core/charts/seat';
 import { seatingKeys } from './keys';
 
 export function useCreateSeating() {
@@ -14,8 +14,8 @@ export function useCreateSeating() {
       schoolId,
       classId,
     }: {
-      seating: SeatingSchemas.Types.CreateInput;
-      seats: Omit<SeatSchemas.Types.CreateInput, 'seatingId'>[];
+      seating: SeatingSchemas.Types.Create;
+      seats: Omit<SeatSchemas.Types.Create, 'seatingId'>[];
       schoolId: string;
       classId: string;
     }) => {
@@ -30,7 +30,7 @@ export function useCreateSeating() {
           seatingId: newSeating.id,
         }));
 
-        await client.seating[':seatingId'].seats.batch.$post({
+        await client.seating[':id'].$post({
           param: { seatingId: newSeating.id },
           json: seatsWithSeatingId,
         });
@@ -50,7 +50,7 @@ export function useUpdateSeating(schoolId: string, classId: string, seatingId: s
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: SeatingSchemas.Types.PatchInput) => {
+    mutationFn: async (data: SeatingSchemas.Types.Patch) => {
       const response = await client.seating[':seatingId'].$put({
         param: { seatingId },
         json: data,

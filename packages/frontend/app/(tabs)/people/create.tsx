@@ -5,8 +5,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { Pressable } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { StudentForm } from '@/components/forms/StudentForm';
-import { StudentSchemas } from '@core/student';
-import { useCreateStudent } from '@/hooks/student/mutations';
+import { PersonSchema } from '@core/people/person';
 import { ArrowLeft } from 'lucide-react';
 
 export default function CreateStudentScreen() {
@@ -14,11 +13,11 @@ export default function CreateStudentScreen() {
   const iconColor = useThemeColor({}, 'text');
   const { width: screenWidth } = useWindowDimensions();
   const contentWidth = Math.min(800, screenWidth - 32);
-  const createMutation = useCreateStudent();
+  // const createMutation = useCreateStudent();
 
-  const handleCreateStudent = async (values: StudentSchemas.Types.CreateInput) => {
+  const handleCreateStudent = async (values: PersonSchema.Types.CreateInput) => {
     try {
-      await createMutation.mutateAsync(values);
+      // await createMutation.mutateAsync(values);
       router.back();
     } catch (error) {
       console.error('Failed to create student:', error);
@@ -36,7 +35,7 @@ export default function CreateStudentScreen() {
         </View>
         <StudentForm
           onSubmit={handleCreateStudent}
-          isSubmitting={createMutation.isLoading}
+          // isSubmitting={createMutation.isLoading}
         />
       </View>
     </ThemedView>

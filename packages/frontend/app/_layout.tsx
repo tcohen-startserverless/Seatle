@@ -5,8 +5,16 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { polyfillWebCrypto } from 'expo-standard-web-crypto';
+import { Platform } from 'react-native';
+
+// Polyfill crypto for web
+if (Platform.OS !== 'web') {
+  polyfillWebCrypto();
+}
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { AuthProvider } from '@/context/AuthContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,11 +53,15 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
+        <AuthProvider>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+            <Stack.Screen name="auth/login" options={{ headerShown: false }} />
+            <Stack.Screen name="callback" options={{ headerShown: false }} />
+          </Stack>
+          <StatusBar style="auto" />
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

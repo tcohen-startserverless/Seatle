@@ -4,8 +4,6 @@ import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { Pressable } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { ClassSchemas } from '@core/class';
-import { useCreateStudent } from '@/hooks/student/mutations';
 import { FloorPlanEditor } from '@/components/FloorPlanEditor';
 import { ArrowLeft, Square } from 'lucide-react';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
@@ -22,7 +20,6 @@ export default function CreateClassScreen() {
   const router = useRouter();
   const iconColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({}, 'border');
-  const createMutation = useCreateStudent(schoolId);
   const [tables, setTables] = useState<TablePosition[]>([]);
 
   const hasCollision = (tableToCheck: TablePosition, allTables: TablePosition[]) => {

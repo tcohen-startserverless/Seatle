@@ -2,11 +2,11 @@ import { Resource } from 'sst';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { Service } from 'electrodb';
-import { Chart } from '@core/chart';
-import { ContactList } from '@core/contactList';
-import { Person } from '@core/person';
-import { Seat } from '@core/seat';
-import { Seating } from '@core/seating';
+import { Chart } from '@core/charts/chart';
+import { List } from '@core/people/list';
+import { Person } from '@core/people/person';
+import { Seat } from '@core/charts/seat';
+import { Seating } from '@core/charts/seating';
 import { User } from '@core/user';
 
 const table = Resource.Table.name;
@@ -20,7 +20,7 @@ export const Config = {
 export const DB = new Service(
   {
     Chart,
-    ContactList,
+    List,
     Person,
     Seat,
     Seating,

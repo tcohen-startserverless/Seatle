@@ -18,14 +18,14 @@ declare module "sst" {
       "type": "sst.aws.Function"
       "url": string
     }
-    "auth": {
-      "name": string
-      "type": "sst.aws.Dynamo"
-    }
-    "authFunction": {
+    "authApi": {
       "name": string
       "type": "sst.aws.Function"
       "url": string
+    }
+    "authTable": {
+      "name": string
+      "type": "sst.aws.Dynamo"
     }
     "email": {
       "configSet": string

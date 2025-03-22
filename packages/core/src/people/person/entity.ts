@@ -1,9 +1,9 @@
-import { Entity } from 'electrodb';
+import { Entity, EntityItem } from 'electrodb';
 import { ulid } from 'ulid';
 
-export const User = new Entity({
+export const Person = new Entity({
   model: {
-    entity: 'user',
+    entity: 'person',
     version: '1',
     service: 'app',
   },
@@ -13,27 +13,29 @@ export const User = new Entity({
       required: true,
       default: () => ulid(),
     },
-    email: {
+    userId: {
       type: 'string',
       required: true,
     },
     firstName: {
       type: 'string',
-      required: false,
+      required: true,
     },
     lastName: {
       type: 'string',
+      required: true,
+    },
+    email: {
+      type: 'string',
       required: false,
     },
-    role: {
-      type: ['ADMIN', 'USER'] as const,
-      default: () => 'USER',
-      required: true,
+    phone: {
+      type: 'string',
+      required: false,
     },
-    status: {
-      type: ['ACTIVE', 'INACTIVE', 'PENDING', 'SUSPENDED'] as const,
-      required: true,
-      default: 'PENDING',
+    notes: {
+      type: 'string',
+      required: false,
     },
     createdAt: {
       type: 'number',
@@ -48,26 +50,27 @@ export const User = new Entity({
   },
   indexes: {
     primary: {
-      scope: 'user',
       pk: {
         field: 'pk',
-        composite: [],
+        composite: ['userId'],
       },
       sk: {
         field: 'sk',
         composite: ['id'],
       },
     },
-    byEmail: {
+    byName: {
       index: 'gsi1',
       pk: {
         field: 'gsi1pk',
-        composite: ['email'],
+        composite: ['userId'],
       },
       sk: {
         field: 'gsi1sk',
-        composite: [],
+        composite: ['lastName', 'firstName'],
       },
     },
   },
 });
+
+export type PersonItem = EntityItem<typeof Person>;

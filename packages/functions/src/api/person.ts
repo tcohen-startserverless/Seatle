@@ -1,14 +1,14 @@
 import { vValidator } from '@hono/valibot-validator';
 import { Hono } from 'hono';
-import { PersonSchemas, PersonService } from '@core/person';
+import { PersonSchema, PersonService } from '@core/person';
 
 const app = new Hono()
-  .post('/', vValidator('json', PersonSchemas.CreateInput), async (c) => {
+  .post('/', vValidator('json', PersonSchema.CreateInput), async (c) => {
     const data = c.req.valid('json');
     const student = await PersonService.create(data);
     return c.json(student, 201);
   })
-  .get('/', vValidator('query', PersonSchemas.ListInput), async (c) => {
+  .get('/', vValidator('query', PersonSchema.ListInput), async (c) => {
     const { schoolId, cursor } = c.req.valid('query');
     const res = await PersonService.list({ schoolId, cursor });
     return c.json(res);
@@ -25,7 +25,7 @@ const app = new Hono()
     }
     return c.json(student);
   })
-  .put('/:schoolId/:id', vValidator('json', PersonSchemas.PatchInput), async (c) => {
+  .put('/:schoolId/:id', vValidator('json', PersonSchema.PatchInput), async (c) => {
     const id = c.req.param('id');
     const schoolId = c.req.param('schoolId');
     const data = c.req.valid('json');
