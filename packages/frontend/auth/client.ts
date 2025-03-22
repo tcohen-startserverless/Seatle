@@ -2,7 +2,7 @@ import { createClient } from '@openauthjs/openauth/client';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Subjects, subjects } from '@core/auth';
+import { subjects } from '@core/auth';
 
 export const openAuthClient = createClient({
   clientID: 'seater-mobile',
@@ -92,13 +92,12 @@ export async function getCurrentUser() {
       return null;
     }
 
-    // If tokens were refreshed, store the new ones
     if (verified.tokens) {
       await AuthStorage.storeTokens(verified.tokens);
     }
 
     if (verified.subject.type === 'user' && verified.subject.properties) {
-      return verified.subject.properties as UserSubject;
+      return verified.subject.properties;
     }
 
     return null;
