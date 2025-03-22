@@ -2,6 +2,8 @@ import { createClient } from '@openauthjs/openauth/client';
 import { createMiddleware } from 'hono/factory';
 import { subjects } from '@core/auth/subjects';
 
+// export const authorize =
+
 export const authMiddleware = (options?: { requireAuth?: boolean }) => {
   const authClient = createClient({
     clientID: 'seater',

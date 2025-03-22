@@ -27,7 +27,7 @@ export default function PeopleScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.content, { width: contentWidth }]}>
-        <PeopleList people={data?.pages[0]?.data ?? []} />
+        {/* <PeopleList people={data?.pages[0]?.data ?? []} /> */}
       </View>
     </ThemedView>
   );
