@@ -21,4 +21,17 @@ export default $config({
     await import('./infra/api');
     await import('./infra/app');
   },
+  console: {
+    autodeploy: {
+      target(event) {
+        if (
+          event.type === 'branch' &&
+          event.branch === 'main' &&
+          event.action === 'pushed'
+        ) {
+          return { stage: 'production' };
+        }
+      },
+    },
+  },
 });
