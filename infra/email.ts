@@ -1,5 +1,7 @@
+import { domain } from './domain';
+
 export const email = new sst.aws.Email('email', {
-  sender: 'trevor.cohen@startserverless.dev',
+  sender: `email.${domain}`,
 });
 
 export const reactEmail = new sst.x.DevCommand('ReactEmail', {
