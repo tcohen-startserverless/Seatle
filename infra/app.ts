@@ -14,12 +14,13 @@ export const mobile = new sst.x.DevCommand('expo', {
   },
 });
 
-// export const web = new sst.aws.StaticSite("Web", {
-//   build: {
-//     command: "npx expo export:web",
-//     output: "web-build",
-//   },
-//   environment: {
-//     EXPO_PUBLIC_API_URL: myApi.url,
-//   },
-// });
+export const web = new sst.aws.StaticSite('Web', {
+  build: {
+    command: 'bunx expo export:web',
+    output: 'web-build',
+  },
+  environment: {
+    EXPO_PUBLIC_API_URL: api.url,
+    EXPO_PUBLIC_AUTH_URL: auth.url,
+  },
+});

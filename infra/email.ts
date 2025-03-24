@@ -1,7 +1,7 @@
 import { domain } from './domain';
 
 export const email = new sst.aws.Email('email', {
-  sender: `email.${domain}`,
+  sender: `${domain}`,
 });
 
 export const reactEmail = new sst.x.DevCommand('ReactEmail', {
