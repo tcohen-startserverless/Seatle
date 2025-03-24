@@ -9,6 +9,7 @@ export default $config({
       providers: {
         aws: {
           profile: 'trevor-dev',
+          region: 'us-west-2',
         },
       },
     };
