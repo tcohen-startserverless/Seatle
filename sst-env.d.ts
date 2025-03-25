@@ -17,6 +17,10 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Dynamo"
     }
+    "Web": {
+      "type": "sst.aws.StaticSite"
+      "url": string
+    }
     "api": {
       "name": string
       "type": "sst.aws.Function"

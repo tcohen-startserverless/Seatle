@@ -1,7 +1,10 @@
-import { domain } from './domain';
+import { domain, zone } from './domain';
 
 export const email = new sst.aws.Email('email', {
   sender: `${domain}`,
+  dns: sst.aws.dns({
+    zone: zone.id,
+  }),
 });
 
 export const reactEmail = new sst.x.DevCommand('ReactEmail', {

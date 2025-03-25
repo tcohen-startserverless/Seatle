@@ -1,4 +1,5 @@
 import { api } from './api';
+import { domain } from './domain';
 import { auth } from './auth';
 
 export const mobile = new sst.x.DevCommand('expo', {
@@ -15,6 +16,7 @@ export const mobile = new sst.x.DevCommand('expo', {
 });
 
 export const web = new sst.aws.StaticSite('Web', {
+  domain: domain,
   build: {
     command: 'bunx expo export:web',
     output: 'web-build',
