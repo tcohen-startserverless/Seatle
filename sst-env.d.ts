@@ -5,32 +5,6 @@
 
 declare module "sst" {
   export interface Resource {
-    "Auth": {
-      "type": "sst.aws.Auth"
-      "url": string
-    }
-    "MyBucket": {
-      "name": string
-      "type": "sst.aws.Bucket"
-    }
-    "Table": {
-      "name": string
-      "type": "sst.aws.Dynamo"
-    }
-    "Web": {
-      "type": "sst.aws.StaticSite"
-      "url": string
-    }
-    "api": {
-      "name": string
-      "type": "sst.aws.Function"
-      "url": string
-    }
-    "email": {
-      "configSet": string
-      "sender": string
-      "type": "sst.aws.Email"
-    }
   }
 }
 /// <reference path="sst-env.d.ts" />

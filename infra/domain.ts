@@ -25,7 +25,7 @@ export const { zone, domain } = (() => {
           name: DEV,
         },
         {
-          import: 'Z05417841XFB23HQ48514',
+          import: 'Z00515891UFIBINRG41CM',
           ignoreChanges: ['*'],
         }
       ),
