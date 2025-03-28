@@ -34,7 +34,7 @@ export default $config({
           event.branch === 'main' &&
           event.action === 'pushed'
         ) {
-          return { stage: 'dev' };
+          return { stage: 'production' };
         }
       },
     },
