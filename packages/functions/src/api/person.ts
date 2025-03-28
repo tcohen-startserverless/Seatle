@@ -9,15 +9,15 @@ const app = new Hono()
     return c.json(student, 201);
   })
   .get('/', vValidator('query', PersonSchema.ListInput), async (c) => {
-    const { schoolId, cursor } = c.req.valid('query');
-    const res = await PersonService.list({ schoolId, cursor });
+    const { userId, cursor } = c.req.valid('query');
+    const res = await PersonService.list({ userId, cursor });
     return c.json(res);
   })
-  .get('/:schoolId/:id', async (c) => {
+  .get('/:userId/:id', async (c) => {
     const id = c.req.param('id');
-    const schoolId = c.req.param('schoolId');
+    const userId = c.req.param('userId');
     const student = await PersonService.get({
-      schoolId,
+      userId,
       id,
     });
     if (!student) {
@@ -25,25 +25,25 @@ const app = new Hono()
     }
     return c.json(student);
   })
-  .put('/:schoolId/:id', vValidator('json', PersonSchema.PatchInput), async (c) => {
+  .put('/:userId/:id', vValidator('json', PersonSchema.PatchInput), async (c) => {
     const id = c.req.param('id');
-    const schoolId = c.req.param('schoolId');
+    const userId = c.req.param('userId');
     const data = c.req.valid('json');
     const updatedStudent = await PersonService.patch(
       {
         id,
-        schoolId,
+        userId,
       },
       data
     );
     return c.json(updatedStudent);
   })
-  .delete('/:schoolId/:id', async (c) => {
+  .delete('/:userId/:id', async (c) => {
     const id = c.req.param('id');
-    const schoolId = c.req.param('schoolId');
+    const userId = c.req.param('userId');
     const result = await PersonService.remove({
       id,
-      schoolId,
+      userId,
     });
     return c.json(result);
   });
