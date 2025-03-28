@@ -8,6 +8,7 @@ export const { zone, domain } = (() => {
         'Zone',
         {
           name: PRODUCTION,
+          forceDestroy: undefined,
         },
         {
           retainOnDelete: true,
