@@ -24,6 +24,10 @@ export default $config({
   },
   console: {
     autodeploy: {
+      runner: {
+        timeout: '15 minutes',
+        engine: 'codebuild',
+      },
       target(event) {
         if (
           event.type === 'branch' &&

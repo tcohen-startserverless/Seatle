@@ -4,6 +4,7 @@ export const email = new sst.aws.Email('email', {
   sender: `${domain}`,
   dns: sst.aws.dns({
     zone: zone.id,
+    // override: true,
   }),
 });
 
