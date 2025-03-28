@@ -13,6 +13,7 @@ export const { zone, domain } = (() => {
         {
           retainOnDelete: true,
           import: 'Z0406942248EQAM70P31',
+          ignoreChanges: ['*'],
         }
       ),
       domain: PRODUCTION,
@@ -24,6 +25,7 @@ export const { zone, domain } = (() => {
         'Zone',
         {
           name: DEV,
+          forceDestroy: undefined,
         },
         {
           import: 'Z00515891UFIBINRG41CM',
