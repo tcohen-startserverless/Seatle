@@ -23,9 +23,6 @@ export default app
     const ctx = c.get('ctx');
     const id = c.req.param('id');
     const person = await PersonService.get(ctx, { id });
-    if (!person) {
-      return c.json({ message: 'Person not found' }, 404);
-    }
     return c.json(person);
   })
   .put('/:id', vValidator('json', PersonSchema.Patch), async (c) => {

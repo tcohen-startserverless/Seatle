@@ -7,7 +7,7 @@ import { Schemas } from '@core/schema';
 
 export const useCreateList = () => {
   const queryClient = useQueryClient();
-  return useMutation<ListItem, Error, Omit<ListSchemas.Types.Create, 'userId'>>({
+  return useMutation<ListItem, Error, ListSchemas.Types.Create>({
     mutationFn: async (params) => {
       const res = await client.list.$post({
         json: params,

@@ -9,10 +9,10 @@ export const useGetList = (params: Schemas.Types.Params) => {
   return useQuery<ListItem | null, Error>({
     queryKey: listKeys.detail(params.id),
     queryFn: async () => {
-      const response = await client.list[':id'].$get({
+      const res = await client.list[':id'].$get({
         param: params,
       });
-      return response.json();
+      return res.json();
     },
   });
 };
@@ -21,13 +21,13 @@ export const useListLists = (params?: Schemas.Types.Pagination) => {
   return useQuery<{ data: ListItem[]; cursor?: string }, Error>({
     queryKey: listKeys.list(params),
     queryFn: async () => {
-      const response = await client.list.$get({
+      const res = await client.list.$get({
         query: {
           cursor: params?.cursor,
           limit: params?.limit?.toString(),
         },
       });
-      const result = await response.json();
+      const result = await res.json();
       return {
         data: result.data,
         cursor: result.cursor || undefined,
@@ -42,14 +42,14 @@ export const useListListsByStatus = (
   return useQuery<{ data: ListItem[]; cursor?: string }, Error>({
     queryKey: listKeys.list({ status: params.status, cursor: params.cursor }),
     queryFn: async () => {
-      const response = await client.list.status[':status'].$get({
+      const res = await client.list.status[':status'].$get({
         param: { status: params.status },
         query: {
           cursor: params?.cursor,
           limit: params?.limit?.toString(),
         },
       });
-      const result = await response.json();
+      const result = await res.json();
       return {
         data: result.data,
         cursor: result.cursor || undefined,

@@ -7,7 +7,7 @@ import { Schemas } from '@core/schema';
 
 export const useCreatePerson = () => {
   const queryClient = useQueryClient();
-  return useMutation<PersonItem, Error, Omit<PersonSchema.Types.Create, 'userId'>>({
+  return useMutation<PersonItem, Error, PersonSchema.Types.Create>({
     mutationFn: async (params) => {
       const res = await client.person.$post({
         json: params,
@@ -26,7 +26,12 @@ export const useUpdatePerson = () => {
   const queryClient = useQueryClient();
   type UpdateParams = Schemas.Types.Params & PersonSchema.Types.Patch;
 
-  return useMutation<PersonItem, Error, UpdateParams, { previousPerson?: PersonItem | null }>({
+  return useMutation<
+    PersonItem,
+    Error,
+    UpdateParams,
+    { previousPerson?: PersonItem | null }
+  >({
     mutationFn: async ({ id, ...params }: UpdateParams) => {
       const res = await client.person[':id'].$put({
         param: { id },
@@ -79,7 +84,9 @@ export const useDeletePerson = () => {
     },
     onMutate: async ({ id }) => {
       await queryClient.cancelQueries({ queryKey: personKeys.detail(id) });
-      const previousPerson = queryClient.getQueryData<PersonItem | null>(personKeys.detail(id));
+      const previousPerson = queryClient.getQueryData<PersonItem | null>(
+        personKeys.detail(id)
+      );
 
       queryClient.setQueryData(personKeys.detail(id), undefined);
 
