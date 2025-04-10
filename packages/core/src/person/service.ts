@@ -1,43 +1,78 @@
 import { PersonSchema } from './schema';
+import { Schemas } from '@core/schema';
 import { DB } from '@core/dynamo';
 
 export namespace PersonService {
-  export const create = async (input: PersonSchema.Types.CreateInput) => {
-    const res = await DB.entities.Person.create(input).go();
+  export const create = async (
+    ctx: Schemas.Types.Context,
+    input: PersonSchema.Types.Create
+  ) => {
+    const res = await DB.entities.Person.create({
+      ...input,
+      userId: ctx.userId,
+    }).go();
     return res.data;
   };
 
-  export const list = async (input: PersonSchema.Types.ListInput) => {
-    const { cursor, ...key } = input;
-    const res = await DB.entities.Person.query.primary(key).go({
-      cursor,
-    });
+  export const list = async (
+    ctx: Schemas.Types.Context,
+    pagination: Schemas.Types.Pagination
+  ) => {
+    const res = await DB.entities.Person.query
+      .primary({
+        userId: ctx.userId,
+      })
+      .go(pagination);
     return res;
   };
 
-  export const listByName = async (input: PersonSchema.Types.ListByNameInput) => {
-    const { cursor, ...key } = input;
-    const res = await DB.entities.Person.query.byName(key).go({
-      cursor,
-    });
+  export const listByName = async (
+    ctx: Schemas.Types.Context,
+    input: Omit<PersonSchema.Types.ListByName, 'userId'>,
+    pagination: Schemas.Types.Pagination
+  ) => {
+    const res = await DB.entities.Person.query
+      .byName({
+        ...input,
+        userId: ctx.userId,
+      })
+      .go(pagination);
     return res;
   };
 
-  export const get = async (input: PersonSchema.Types.GetInput) => {
-    const res = await DB.entities.Person.get(input).go();
+  export const get = async (ctx: Schemas.Types.Context, params: Schemas.Types.Params) => {
+    const res = await DB.entities.Person.get({
+      userId: ctx.userId,
+      id: params.id,
+    }).go();
     return res.data;
   };
 
   export const patch = async (
-    params: PersonSchema.Types.GetInput,
-    input: PersonSchema.Types.PatchInput
+    ctx: Schemas.Types.Context,
+    params: Schemas.Types.Params,
+    input: PersonSchema.Types.Patch
   ) => {
-    const res = await DB.entities.Person.patch(params).set(input).go();
+    const res = await DB.entities.Person.patch({
+      userId: ctx.userId,
+      id: params.id,
+    })
+      .set({
+        ...input,
+        updatedAt: Date.now(),
+      })
+      .go({ response: 'all_new' });
     return res.data;
   };
 
-  export const remove = async (input: PersonSchema.Types.DeleteInput) => {
-    const res = await DB.entities.Person.remove(input).go();
+  export const remove = async (
+    ctx: Schemas.Types.Context,
+    params: Schemas.Types.Params
+  ) => {
+    const res = await DB.entities.Person.remove({
+      userId: ctx.userId,
+      id: params.id,
+    }).go();
     return res.data;
   };
 }

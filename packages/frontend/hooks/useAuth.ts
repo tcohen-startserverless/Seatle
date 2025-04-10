@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { openAuthClient, AuthStorage, getCurrentUser, UserSubject } from '@/auth/client';
 
-// Simple event emitter for auth state changes
 const authEvents = new EventTarget();
 export const AUTH_CHANGED = 'auth_changed';
 
@@ -17,7 +16,7 @@ export function useAuth() {
   useEffect(() => {
     const handleAuthChange = () => checkAuthState();
     authEvents.addEventListener(AUTH_CHANGED, handleAuthChange);
-    
+
     const checkAuthState = async () => {
       try {
         setIsLoading(true);

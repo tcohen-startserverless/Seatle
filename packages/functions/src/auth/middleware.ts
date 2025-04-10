@@ -1,8 +1,31 @@
+import type {
+  ApiGatewayRequestContextV2,
+  LambdaContext,
+  LambdaEvent,
+} from 'hono/aws-lambda';
+import type { ALBProxyEvent } from 'node_modules/hono/dist/types/adapter/aws-lambda/handler';
 import { createClient } from '@openauthjs/openauth/client';
 import { createMiddleware } from 'hono/factory';
 import { subjects } from '@core/auth/subjects';
 
-// export const authorize =
+type Bindings = {
+  event: Exclude<LambdaEvent, ALBProxyEvent>;
+  lambdaContext: LambdaContext;
+  requestContext: ApiGatewayRequestContextV2;
+};
+
+type Variables = {
+  ctx: {
+    userId: string;
+    userEmail: string;
+    userRole: string;
+  };
+};
+
+export type Enviroment = {
+  Bindings: Bindings;
+  Variables: Variables;
+};
 
 export const authMiddleware = (options?: { requireAuth?: boolean }) => {
   const authClient = createClient({
@@ -30,9 +53,11 @@ export const authMiddleware = (options?: { requireAuth?: boolean }) => {
     }
     if (verified.subject.type === 'user' && verified.subject.properties) {
       const { id, email, role } = verified.subject.properties;
-      c.set('userId', id);
-      c.set('userEmail', email);
-      c.set('userRole', role || 'user');
+      c.set('ctx', {
+        userId: id,
+        userEmail: email,
+        userRole: role || 'user',
+      });
     }
     if (verified.tokens) {
       c.header('X-Auth-Token', verified.tokens.access);

@@ -1,23 +1,19 @@
 import { vValidator } from '@hono/valibot-validator';
 import { Hono } from 'hono';
 import { UserSchemas, UserService } from '@core/user';
+import { Enviroment } from '@functions/auth/middleware';
 
-const app = new Hono();
+const app = new Hono<Enviroment>();
 
 export default app
-  .post('/users', vValidator('json', UserSchemas.CreateUserInput), async (c) => {
-    const data = c.req.valid('json');
-    const user = await UserService.create(data);
-    return c.json(user, 201);
-  })
-  .get('/users/me', async (c) => {
-    const userId = c.get('userId');
-    const user = await UserService.getById({ userId });
+  .get('/me', async (c) => {
+    const ctx = c.get('ctx');
+    const user = await UserService.getById(ctx);
     return c.json(user);
   })
-  .patch('/users/me', vValidator('json', UserSchemas.PatchUserInput), async (c) => {
-    const userId = c.get('userId');
+  .patch('/me', vValidator('json', UserSchemas.Patch), async (c) => {
+    const ctx = c.get('ctx');
     const data = c.req.valid('json');
-    const updatedUser = await UserService.patch({ userId, data });
+    const updatedUser = await UserService.patch(ctx, data);
     return c.json(updatedUser);
   });

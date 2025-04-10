@@ -15,7 +15,7 @@ export default function ChartsScreen() {
         <View style={styles.header}>
           <ThemedText type="title">Classes</ThemedText>
         </View>
-        <FAB onPress={() => router.push('/class/create')} />
+        <FAB onPress={() => router.push('/charts/create')} />
       </View>
     </ThemedView>
   );

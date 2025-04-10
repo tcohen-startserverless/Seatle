@@ -1,11 +1,12 @@
 import { domain, zone } from './domain';
 
 export const email = new sst.aws.Email('email', {
-  sender: `${domain}`,
-  dns: sst.aws.dns({
-    zone: zone.id,
-    // override: true,
-  }),
+  sender: domain ? domain : 'trevor.cohen@startserverless.dev',
+  dns: zone
+    ? sst.aws.dns({
+        zone: zone?.id,
+      })
+    : undefined,
 });
 
 export const reactEmail = new sst.x.DevCommand('ReactEmail', {
