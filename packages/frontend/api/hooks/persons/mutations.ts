@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { client } from '@/api';
+import { useApiClient } from '@/api';
 import { personKeys } from './keys';
 import { PersonSchema } from '@core/person';
 import type { PersonItem } from '@core/person';
@@ -7,8 +7,11 @@ import { Schemas } from '@core/schema';
 
 export const useCreatePerson = () => {
   const queryClient = useQueryClient();
+  const { client } = useApiClient();
+  
   return useMutation<PersonItem, Error, PersonSchema.Types.Create>({
     mutationFn: async (params) => {
+      if (!client) throw new Error('API client not initialized');
       const res = await client.person.$post({
         json: params,
       });
@@ -24,6 +27,7 @@ export const useCreatePerson = () => {
 
 export const useUpdatePerson = () => {
   const queryClient = useQueryClient();
+  const { client } = useApiClient();
   type UpdateParams = Schemas.Types.Params & PersonSchema.Types.Patch;
 
   return useMutation<
@@ -33,6 +37,7 @@ export const useUpdatePerson = () => {
     { previousPerson?: PersonItem | null }
   >({
     mutationFn: async ({ id, ...params }: UpdateParams) => {
+      if (!client) throw new Error('API client not initialized');
       const res = await client.person[':id'].$put({
         param: { id },
         json: params,
@@ -68,6 +73,7 @@ export const useUpdatePerson = () => {
 
 export const useDeletePerson = () => {
   const queryClient = useQueryClient();
+  const { client } = useApiClient();
   type DeleteParams = Schemas.Types.Params;
 
   return useMutation<
@@ -77,6 +83,7 @@ export const useDeletePerson = () => {
     { previousPerson?: PersonItem | null }
   >({
     mutationFn: async ({ id }) => {
+      if (!client) throw new Error('API client not initialized');
       const res = await client.person[':id'].$delete({
         param: { id },
       });

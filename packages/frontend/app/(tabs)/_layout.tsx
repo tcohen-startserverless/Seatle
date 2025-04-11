@@ -4,7 +4,7 @@ import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 // import { IconSymbol } from '@/components/ui/IconSymbol';
-import { Home, Users, GraduationCap } from 'lucide-react';
+import { Home, Users, GraduationCap, ListChecks } from 'lucide-react';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -45,6 +45,13 @@ export default function TabLayout() {
         options={{
           title: 'People',
           tabBarIcon: ({ color }) => <Users size={28} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="lists"
+        options={{
+          title: 'Lists',
+          tabBarIcon: ({ color }) => <ListChecks size={28} color={color} />,
         }}
       />
       <Tabs.Screen

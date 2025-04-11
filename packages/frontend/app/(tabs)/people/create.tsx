@@ -5,7 +5,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { Pressable } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { StudentForm } from '@/components/forms/StudentForm';
-import { PersonSchema } from '@core/people/person';
+import { PersonSchema } from '@core/person';
 import { ArrowLeft } from 'lucide-react';
 
 export default function CreateStudentScreen() {
@@ -15,7 +15,7 @@ export default function CreateStudentScreen() {
   const contentWidth = Math.min(800, screenWidth - 32);
   // const createMutation = useCreateStudent();
 
-  const handleCreateStudent = async (values: PersonSchema.Types.CreateInput) => {
+  const handleCreateStudent = async (values: PersonSchema.Types.Create) => {
     try {
       // await createMutation.mutateAsync(values);
       router.back();

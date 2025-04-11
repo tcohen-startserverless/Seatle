@@ -19,6 +19,9 @@ export const Colors = {
     primaryRow: '#fff',
     alternateRow: 'rgba(10, 126, 164, 0.1)',
     card: '#ffffff',
+    inputBackground: '#F8F9FA',
+    placeholderText: '#889096',
+    inputText: '#11181C',
   },
   dark: {
     text: '#ECEDEE',
@@ -31,5 +34,8 @@ export const Colors = {
     primaryRow: '#1f2123',
     alternateRow: 'rgba(255, 255, 255, 0.1)',
     card: '#1f2123',
+    inputBackground: '#1A1D1E',
+    placeholderText: '#687076',
+    inputText: '#ECEDEE',
   },
 };

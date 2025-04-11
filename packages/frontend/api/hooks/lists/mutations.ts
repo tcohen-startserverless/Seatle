@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { client } from '@/api';
+import { useApiClient } from '@/api';
 import { listKeys } from './keys';
 import { ListSchemas } from '@core/list';
 import type { ListItem } from '@core/list';
@@ -7,8 +7,11 @@ import { Schemas } from '@core/schema';
 
 export const useCreateList = () => {
   const queryClient = useQueryClient();
+  const { client } = useApiClient();
+
   return useMutation<ListItem, Error, ListSchemas.Types.Create>({
     mutationFn: async (params) => {
+      if (!client) throw new Error('API client not initialized');
       const res = await client.list.$post({
         json: params,
       });
@@ -25,9 +28,11 @@ export const useCreateList = () => {
 export const useUpdateList = () => {
   const queryClient = useQueryClient();
   type UpdateParams = Schemas.Types.Params & ListSchemas.Types.Patch;
+  const { client } = useApiClient();
 
   return useMutation<ListItem, Error, UpdateParams, { previousList?: ListItem | null }>({
     mutationFn: async ({ id, ...params }: UpdateParams) => {
+      if (!client) throw new Error('API client not initialized');
       const res = await client.list[':id'].$patch({
         param: { id },
         json: params,
@@ -63,6 +68,7 @@ export const useUpdateList = () => {
 
 export const useDeleteList = () => {
   const queryClient = useQueryClient();
+  const { client } = useApiClient();
   type DeleteParams = Schemas.Types.Params;
 
   return useMutation<
@@ -72,6 +78,7 @@ export const useDeleteList = () => {
     { previousList?: ListItem | null }
   >({
     mutationFn: async ({ id }) => {
+      if (!client) throw new Error('API client not initialized');
       const res = await client.list[':id'].$delete({
         param: { id },
       });
