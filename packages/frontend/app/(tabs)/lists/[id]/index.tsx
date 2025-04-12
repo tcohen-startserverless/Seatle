@@ -5,7 +5,6 @@ import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ArrowLeft, ListChecks } from 'lucide-react';
 import { useGetList } from '@/api/hooks/lists';
-import { useState, useEffect } from 'react';
 
 function ListDetailSkeleton({
   contentWidth,
@@ -34,7 +33,11 @@ function ListDetailSkeleton({
 
         <View style={styles.detailsContent}>
           <View
-            style={[styles.skeleton, styles.skeletonTitle, { backgroundColor: skeletonColor }]}
+            style={[
+              styles.skeleton,
+              styles.skeletonTitle,
+              { backgroundColor: skeletonColor },
+            ]}
           />
 
           <View
@@ -45,12 +48,7 @@ function ListDetailSkeleton({
             ]}
           />
 
-          <View
-            style={[
-              styles.emptyItems,
-              { borderColor: skeletonColor, opacity: 0.6 },
-            ]}
-          >
+          <View style={[styles.emptyItems, { borderColor: skeletonColor, opacity: 0.6 }]}>
             <ThemedText style={styles.emptyText}>Loading items...</ThemedText>
           </View>
         </View>
@@ -65,24 +63,18 @@ export default function ListDetailScreen() {
   const iconColor = useThemeColor({}, 'text');
   const { width: screenWidth } = useWindowDimensions();
   const contentWidth = Math.min(800, screenWidth - 32);
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
 
-  const { data: list, isLoading, isFetching, error } = useGetList({ id: id ?? '' });
+  const { data: list, isFetching, error, isLoading } = useGetList({ id: id });
 
-  useEffect(() => {
-    if (isFirstLoad && !isLoading) {
-      setIsFirstLoad(false);
-    }
-  }, [isLoading]);
+  const showSkeleton = isLoading || isFetching;
 
-  // Show skeleton during initial load
-  if (isLoading && isFirstLoad) {
+  if (showSkeleton) {
     return (
       <ThemedView style={styles.container}>
-        <ListDetailSkeleton 
-          contentWidth={contentWidth} 
-          iconColor={iconColor} 
-          onBack={() => router.back()} 
+        <ListDetailSkeleton
+          contentWidth={contentWidth}
+          iconColor={iconColor}
+          onBack={() => router.push('/lists')}
         />
       </ThemedView>
     );
@@ -104,6 +96,22 @@ export default function ListDetailScreen() {
     );
   }
 
+  if (!list && !isLoading) {
+    return (
+      <ThemedView style={styles.container}>
+        <View style={[styles.content, { width: contentWidth }]}>
+          <View style={styles.header}>
+            <Pressable onPress={() => router.back()} style={styles.backButton}>
+              <ArrowLeft size={24} color={iconColor} />
+            </Pressable>
+            <ThemedText type="title">List Not Found</ThemedText>
+          </View>
+          <ThemedText>The requested list could not be found</ThemedText>
+        </View>
+      </ThemedView>
+    );
+  }
+
   if (!list) {
     return (
       <ThemedView style={styles.container}>
@@ -120,6 +128,7 @@ export default function ListDetailScreen() {
     );
   }
 
+  // At this point list is guaranteed to be non-null
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.content, { width: contentWidth }]}>
@@ -145,7 +154,6 @@ export default function ListDetailScreen() {
               <ThemedText style={styles.noDescription}>No description</ThemedText>
             )}
 
-            {/* Add list items here in the future */}
             <View style={styles.emptyItems}>
               <ThemedText style={styles.emptyText}>No items in this list yet</ThemedText>
             </View>

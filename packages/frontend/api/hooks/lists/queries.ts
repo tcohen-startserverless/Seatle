@@ -8,7 +8,7 @@ import type { ListItem } from '@core/list';
 export const useGetList = (params: Schemas.Types.Params) => {
   const { client, isLoading: clientLoading } = useApiClient();
   const queryClient = useQueryClient();
-  
+
   return useQuery<ListItem | null, Error>({
     queryKey: listKeys.detail(params.id),
     queryFn: async () => {
@@ -18,9 +18,9 @@ export const useGetList = (params: Schemas.Types.Params) => {
       });
       return res.json();
     },
-    initialData: () => {
+    placeholderData: () => {
       const listsData = queryClient.getQueryData<{ data: ListItem[] }>(listKeys.lists());
-      const cachedList = listsData?.data?.find(item => item.id === params.id);
+      const cachedList = listsData?.data?.find((item) => item.id === params.id);
       return cachedList || null;
     },
     enabled: !!client && !clientLoading,
@@ -29,7 +29,7 @@ export const useGetList = (params: Schemas.Types.Params) => {
 
 export const useListLists = (params?: Schemas.Types.Pagination) => {
   const { client, isLoading: clientLoading } = useApiClient();
-  
+
   return useQuery<{ data: ListItem[]; cursor?: string }, Error>({
     queryKey: listKeys.list(params),
     queryFn: async () => {
@@ -54,7 +54,7 @@ export const useListListsByStatus = (
   params: ListSchemas.Types.ListByStatus & Schemas.Types.Pagination
 ) => {
   const { client, isLoading: clientLoading } = useApiClient();
-  
+
   return useQuery<{ data: ListItem[]; cursor?: string }, Error>({
     queryKey: listKeys.list({ status: params.status, cursor: params.cursor }),
     queryFn: async () => {
