@@ -13,6 +13,7 @@ export namespace Schemas {
     v.object({
       cursor: v.optional(v.string()),
       limit: v.optional(v.number()),
+      pages: v.union([v.literal('all'), v.number()]),
     })
   );
 

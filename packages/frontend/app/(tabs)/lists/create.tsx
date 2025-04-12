@@ -5,40 +5,38 @@ import { ThemedText } from '@/components/ThemedText';
 import { Pressable } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
 import { Button } from '@/components/Button';
 import { useCreateList } from '@/api/hooks/lists';
 import { TextInput } from '@/components/TextInput';
+import { useForm } from '@tanstack/react-form';
+import * as v from 'valibot';
 
 export default function CreateListScreen() {
   const router = useRouter();
   const iconColor = useThemeColor({}, 'text');
   const { width: screenWidth } = useWindowDimensions();
   const contentWidth = Math.min(800, screenWidth - 32);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [nameError, setNameError] = useState('');
   const createMutation = useCreateList();
-
-  const handleSubmit = async () => {
-    if (!name.trim()) {
-      setNameError('Name is required');
-      return;
-    }
-    setNameError('');
-
-    try {
-      await createMutation.mutateAsync({
-        name: name.trim(),
-        description: description.trim() || undefined,
-      });
-      router.push('/lists');
-    } catch (error) {
-      console.error('Failed to create list:', error);
-    }
-  };
-
-  const isSubmitting = createMutation.status === 'pending';
+  
+  const form = useForm({
+    defaultValues: {
+      name: '',
+      description: '',
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        await createMutation.mutateAsync({
+          name: value.name.trim(),
+          description: value.description?.trim() || undefined,
+        });
+        router.push('/lists');
+      } catch (error) {
+        console.error('Failed to create list:', error);
+      }
+    },
+  });
+  
+  const isSubmitting = createMutation.status === 'pending' || form.state.isSubmitting;
 
   return (
     <ThemedView style={styles.container}>
@@ -51,33 +49,62 @@ export default function CreateListScreen() {
         </View>
 
         <View style={styles.form}>
-          <View style={styles.formGroup}>
-            <ThemedText style={styles.label}>Name</ThemedText>
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="Enter list name"
-              style={styles.input}
-              autoFocus
-            />
-            {nameError ? (
-              <ThemedText style={styles.errorText}>{nameError}</ThemedText>
-            ) : null}
-          </View>
+          <form.Field
+            name="name"
+            validators={{
+              onChange: (field) => {
+                if (!field.value?.trim()) {
+                  return 'Name is required'
+                }
+                return undefined
+              }
+            }}
+          >
+            {(field) => (
+              <View style={styles.formGroup}>
+                <ThemedText style={styles.label}>Name</ThemedText>
+                <TextInput
+                  value={field.state.value}
+                  onChangeText={field.handleChange}
+                  onBlur={field.handleBlur}
+                  placeholder="Enter list name"
+                  style={styles.input}
+                  autoFocus
+                />
+                {field.state.meta.errors.length > 0 && field.state.meta.isTouched ? (
+                  <ThemedText style={styles.errorText}>
+                    {field.state.meta.errors[0]}
+                  </ThemedText>
+                ) : null}
+              </View>
+            )}
+          </form.Field>
 
-          <View style={styles.formGroup}>
-            <ThemedText style={styles.label}>Description (optional)</ThemedText>
-            <TextInput
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Enter description"
-              style={styles.input}
-              multiline
-              numberOfLines={3}
-            />
-          </View>
+          <form.Field
+            name="description"
+          >
+            {(field) => (
+              <View style={styles.formGroup}>
+                <ThemedText style={styles.label}>Description (optional)</ThemedText>
+                <TextInput
+                  value={field.state.value}
+                  onChangeText={field.handleChange}
+                  onBlur={field.handleBlur}
+                  placeholder="Enter description"
+                  style={styles.input}
+                  multiline
+                  numberOfLines={3}
+                />
+              </View>
+            )}
+          </form.Field>
 
-          <Button onPress={handleSubmit} style={styles.button} isLoading={isSubmitting}>
+          <Button 
+            onPress={() => form.handleSubmit()} 
+            style={styles.button} 
+            isLoading={isSubmitting}
+            disabled={!form.state.canSubmit}
+          >
             Create List
           </Button>
         </View>

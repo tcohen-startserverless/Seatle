@@ -16,25 +16,13 @@ export namespace PersonService {
 
   export const list = async (
     ctx: Schemas.Types.Context,
+    params: Schemas.Types.Params,
     pagination: Schemas.Types.Pagination
   ) => {
     const res = await DB.entities.Person.query
       .primary({
         userId: ctx.userId,
-      })
-      .go(pagination);
-    return res;
-  };
-
-  export const listByName = async (
-    ctx: Schemas.Types.Context,
-    input: Omit<PersonSchema.Types.ListByName, 'userId'>,
-    pagination: Schemas.Types.Pagination
-  ) => {
-    const res = await DB.entities.Person.query
-      .byName({
-        ...input,
-        userId: ctx.userId,
+        listId: params.id,
       })
       .go(pagination);
     return res;

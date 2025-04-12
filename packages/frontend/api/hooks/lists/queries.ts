@@ -3,13 +3,13 @@ import { useApiClient } from '@/api';
 import { listKeys } from './keys';
 import { Schemas } from '@core/schema';
 import { ListSchemas } from '@core/list';
-import type { ListItem } from '@core/list';
+import type { ListItem, CompleteList } from '@core/list';
 
 export const useGetList = (params: Schemas.Types.Params) => {
   const { client, isLoading: clientLoading } = useApiClient();
   const queryClient = useQueryClient();
 
-  return useQuery<ListItem | null, Error>({
+  return useQuery<CompleteList | null, Error>({
     queryKey: listKeys.detail(params.id),
     queryFn: async () => {
       if (!client) throw new Error('API client not initialized');
@@ -21,8 +21,16 @@ export const useGetList = (params: Schemas.Types.Params) => {
     placeholderData: () => {
       const listsData = queryClient.getQueryData<{ data: ListItem[] }>(listKeys.lists());
       const cachedList = listsData?.data?.find((item) => item.id === params.id);
-      return cachedList || null;
+      if (cachedList) {
+        return {
+          ...cachedList,
+          people: [],
+        };
+      }
+      return null;
     },
+    staleTime: 30 * 1000,
+    refetchOnMount: true,
     enabled: !!client && !clientLoading,
   });
 };

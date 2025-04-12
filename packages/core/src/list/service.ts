@@ -1,6 +1,13 @@
 import { DB } from '@core/dynamo';
 import { ListSchemas } from './schema';
 import { Schemas } from '@core/schema';
+import { PersonService } from '@core/person';
+import { ListItem } from './entity';
+import { PersonItem } from '@core/person';
+
+export type CompleteList = ListItem & {
+  people: PersonItem[];
+};
 
 export namespace ListService {
   export const create = async (
@@ -14,12 +21,22 @@ export namespace ListService {
     return res.data;
   };
 
-  export const get = async (ctx: Schemas.Types.Context, input: Schemas.Types.Params) => {
-    const res = await DB.entities.List.get({
-      userId: ctx.userId,
-      id: input.id,
-    }).go();
-    return res.data;
+  export const get = async (
+    ctx: Schemas.Types.Context,
+    input: Schemas.Types.Params
+  ): Promise<CompleteList | null> => {
+    const [res, perRes] = await Promise.all([
+      DB.entities.List.get({
+        userId: ctx.userId,
+        id: input.id,
+      }).go(),
+      PersonService.list(ctx, input, { pages: 'all' }),
+    ]);
+    if (!res.data) return null;
+    return {
+      ...res.data,
+      people: perRes.data,
+    };
   };
 
   export const list = async (

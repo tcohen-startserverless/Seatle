@@ -1,4 +1,4 @@
-import { StyleSheet, useWindowDimensions, View, FlatList, Pressable } from 'react-native';
+import { StyleSheet, useWindowDimensions, View, FlatList, Pressable, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
@@ -57,10 +57,36 @@ function ListsSkeleton({ contentWidth }: { contentWidth: number }) {
   );
 }
 
+// Helper to determine if we're on web platform
+const isWeb = Platform.OS === 'web';
+
+// Grid card component for web layout
+function ListCard({ item, onPress, iconColor, cardBackground }: { 
+  item: any, 
+  onPress: () => void, 
+  iconColor: string, 
+  cardBackground: string 
+}) {
+  return (
+    <Pressable
+      style={[styles.card, { backgroundColor: cardBackground }]}
+      onPress={onPress}
+    >
+      <View style={styles.cardHeader}>
+        <ListChecks size={24} color={iconColor} style={styles.cardIcon} />
+        <ThemedText style={styles.cardTitle}>{item.name}</ThemedText>
+      </View>
+      {item.description && (
+        <ThemedText style={styles.cardDescription}>{item.description}</ThemedText>
+      )}
+    </Pressable>
+  );
+}
+
 export default function ListsScreen() {
   const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
-  const contentWidth = Math.min(800, screenWidth - 32);
+  const contentWidth = Math.min(1200, screenWidth - 32); // Increased max width for web
   const iconColor = useThemeColor({}, 'text');
   const cardBackground = useThemeColor({}, 'card');
   const [isFirstLoad, setIsFirstLoad] = useState(true);
@@ -95,6 +121,59 @@ export default function ListsScreen() {
     );
   }
 
+  // Calculate number of columns based on screen width for web
+  const numColumns = isWeb ? Math.max(1, Math.floor(contentWidth / 300)) : 1;
+  
+  const renderList = () => {
+    const lists = data?.data || [];
+    
+    if (lists.length === 0) {
+      return (
+        <View style={styles.emptyState}>
+          <ThemedText style={styles.emptyText}>No lists found</ThemedText>
+          <ThemedText style={styles.emptySubtext}>
+            Create a list to get started
+          </ThemedText>
+        </View>
+      );
+    }
+    
+    if (isWeb && numColumns > 1) {
+      // Grid layout for web
+      return (
+        <View style={styles.gridContainer}>
+          {lists.map((item: any) => (
+            <View key={item.id} style={[styles.gridItem, { width: `${100 / numColumns}%` }]}>
+              <ListCard 
+                item={item} 
+                onPress={() => router.push(`/lists/${item.id}`)} 
+                iconColor={iconColor} 
+                cardBackground={cardBackground} 
+              />
+            </View>
+          ))}
+        </View>
+      );
+    } else {
+      // List layout for mobile
+      return (
+        <FlatList
+          data={lists}
+          keyExtractor={(item: any) => item.id}
+          renderItem={({ item }: { item: any }) => (
+            <ListCard 
+              item={item} 
+              onPress={() => router.push(`/lists/${item.id}`)} 
+              iconColor={iconColor} 
+              cardBackground={cardBackground} 
+            />
+          )}
+          contentContainerStyle={styles.listContent}
+        />
+      );
+    }
+  };
+  
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.content, { width: contentWidth }]}>
@@ -103,33 +182,7 @@ export default function ListsScreen() {
           {isFetching && <View style={styles.loadingIndicator} />}
         </View>
 
-        <FlatList
-          data={data?.data || []}
-          keyExtractor={(item: any) => item.id}
-          renderItem={({ item }: { item: any }) => (
-            <Pressable
-              style={[styles.card, { backgroundColor: cardBackground }]}
-              onPress={() => router.push(`/lists/${item.id}`)}
-            >
-              <View style={styles.cardHeader}>
-                <ListChecks size={24} color={iconColor} style={styles.cardIcon} />
-                <ThemedText style={styles.cardTitle}>{item.name}</ThemedText>
-              </View>
-              {item.description && (
-                <ThemedText style={styles.cardDescription}>{item.description}</ThemedText>
-              )}
-            </Pressable>
-          )}
-          ListEmptyComponent={
-            <View style={styles.emptyState}>
-              <ThemedText style={styles.emptyText}>No lists found</ThemedText>
-              <ThemedText style={styles.emptySubtext}>
-                Create a list to get started
-              </ThemedText>
-            </View>
-          }
-          contentContainerStyle={styles.listContent}
-        />
+        {renderList()}
 
         <FAB onPress={() => router.push('/lists/create')} />
       </View>
@@ -152,7 +205,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
     marginBottom: 24,
-    maxWidth: 400,
+    maxWidth: isWeb ? 1200 : 400,
     width: '100%',
     alignSelf: 'center',
   },
@@ -160,10 +213,22 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 80, // Space for FAB
   },
+  // Grid layout styles
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -8, // Offset the padding in gridItem
+    paddingBottom: 80, // Space for FAB
+  },
+  gridItem: {
+    paddingHorizontal: 8,
+    marginBottom: 16,
+  },
   card: {
     borderRadius: 8,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: isWeb ? 0 : 16, // Only add margin on mobile list view
+    height: '100%', // Make all cards same height in grid
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,

@@ -13,6 +13,10 @@ export const Person = new Entity({
       required: true,
       default: () => ulid(),
     },
+    listId: {
+      type: 'string',
+      required: true,
+    },
     userId: {
       type: 'string',
       required: true,
@@ -59,7 +63,7 @@ export const Person = new Entity({
         composite: ['id'],
       },
     },
-    byName: {
+    byList: {
       index: 'GSI1',
       pk: {
         field: 'gsi1pk',
@@ -67,7 +71,7 @@ export const Person = new Entity({
       },
       sk: {
         field: 'gsi1sk',
-        composite: ['lastName', 'firstName'],
+        composite: ['listId', 'id'],
       },
     },
   },

@@ -16,7 +16,7 @@
 - **API**: Hono with valibot for validation
 - **Database**: DynamoDB with ElectroDB
 - **State Management**: TanStack Query
-- **Form Handling**: TanStack Form with valibot
+- **Form Handling**: TanStack Form with valibot schema validation
 - **Naming**: PascalCase for components, camelCase for functions/variables
 - **Imports**: Group imports by external packages first, then internal modules
 - **Component Structure**: Functional components with hooks for state/effects
