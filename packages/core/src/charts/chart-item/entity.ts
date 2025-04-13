@@ -1,9 +1,9 @@
 import { Entity, EntityItem } from 'electrodb';
 import { ulid } from 'ulid';
 
-export const Chart = new Entity({
+export const ChartItem = new Entity({
   model: {
-    entity: 'chart',
+    entity: 'chartItem',
     version: '1',
     service: 'app',
   },
@@ -13,37 +13,45 @@ export const Chart = new Entity({
       required: true,
       default: () => ulid(),
     },
+    chartId: {
+      type: 'string',
+      required: true,
+    },
     userId: {
       type: 'string',
       required: true,
     },
-    name: {
-      type: 'string',
+    type: {
+      type: ['TABLE', 'CHAIR', 'OTHER'] as const,
       required: true,
     },
-    description: {
-      type: 'string',
-      required: false,
+    x: {
+      type: 'number',
+      required: true,
     },
-    listIds: {
-      type: 'set',
-      items: 'string',
-      required: false,
+    y: {
+      type: 'number',
+      required: true,
     },
     width: {
       type: 'number',
       required: true,
-      default: 800,
     },
     height: {
       type: 'number',
       required: true,
-      default: 600,
     },
-    status: {
-      type: ['ACTIVE', 'ARCHIVED'] as const,
-      required: true,
-      default: 'ACTIVE',
+    size: {
+      type: 'number',
+      required: false,
+    },
+    cells: {
+      type: 'number',
+      required: false,
+    },
+    properties: {
+      type: 'map',
+      required: false,
     },
     createdAt: {
       type: 'number',
@@ -67,7 +75,7 @@ export const Chart = new Entity({
         composite: ['id'],
       },
     },
-    byStatus: {
+    byChart: {
       index: 'GSI1',
       pk: {
         field: 'gsi1pk',
@@ -75,10 +83,10 @@ export const Chart = new Entity({
       },
       sk: {
         field: 'gsi1sk',
-        composite: ['status', 'createdAt'],
+        composite: ['chartId', 'id'],
       },
     },
   },
 });
 
-export type ChartItem = EntityItem<typeof Chart>;
+export type ChartItemEntity = EntityItem<typeof ChartItem>;

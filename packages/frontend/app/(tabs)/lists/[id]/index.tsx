@@ -6,21 +6,28 @@ import {
   Platform,
   FlatList,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { ArrowLeft, ListChecks, UserPlus } from 'lucide-react';
+import { ArrowLeft, ListChecks, UserPlus, Edit, ArrowRightLeft, Trash2 } from 'lucide-react';
 import { useGetList } from '@/api/hooks/lists';
 import { Button } from '@/components/Button';
 import { AddPersonModal } from '@/components/modals/AddPersonModal';
 import { EditPersonModal } from '@/components/modals/EditPersonModal';
 import { MovePersonModal } from '@/components/modals/MovePersonModal';
 import { PersonCard } from '@/components/ui/PersonCard';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useCreatePerson, useDeletePerson, useUpdatePerson } from '@/api/hooks/persons';
 import type { PersonItem } from '@core/person';
+import { Animated, Easing } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
+import { listKeys } from '@/api/hooks/lists/keys';
+import { TextInput } from '@/components/TextInput';
+import { useForm } from '@tanstack/react-form';
+
 const isWeb = Platform.OS === 'web';
 
 function ListDetailSkeleton({
@@ -44,87 +51,286 @@ function ListDetailSkeleton({
         <ThemedText type="title">List Details</ThemedText>
       </View>
 
-      {isWeb ? (
-        <View style={styles.webContainer}>
-          <View
-            style={[
-              styles.webPanel,
-              styles.webLeftPanel,
-              { backgroundColor: cardBackground },
-            ]}
-          >
-            <View style={styles.iconContainer}>
-              <ListChecks size={isWeb ? 48 : 32} color={iconColor} />
-            </View>
-            <View
-              style={[
-                styles.skeleton,
-                styles.skeletonTitle,
-                { backgroundColor: skeletonColor },
-              ]}
-            />
-            <View
-              style={[
-                styles.skeleton,
-                styles.skeletonDescription,
-                { backgroundColor: skeletonColor },
-              ]}
-            />
+      <View style={styles.detailsContainer}>
+        <View style={styles.compactHeaderSkeleton}>
+          <View style={styles.iconContainer}>
+            <ListChecks size={24} color={iconColor} />
           </View>
-
           <View
             style={[
-              styles.webPanel,
-              styles.webRightPanel,
-              { backgroundColor: cardBackground },
+              styles.skeleton,
+              styles.skeletonTitle,
+              { backgroundColor: skeletonColor },
             ]}
-          >
-            <View style={styles.webPanelHeader}>
-              <View
-                style={[
-                  styles.skeleton,
-                  { height: 28, width: 120, backgroundColor: skeletonColor },
-                ]}
+          />
+          <View
+            style={[
+              styles.skeleton,
+              styles.skeletonDescription,
+              { backgroundColor: skeletonColor },
+            ]}
+          />
+        </View>
+
+        <View
+          style={[
+            styles.skeletonPanel,
+            { backgroundColor: cardBackground, marginBottom: 24 },
+          ]}
+        >
+          <View
+            style={[
+              styles.skeleton,
+              { height: 24, width: 150, backgroundColor: skeletonColor },
+            ]}
+          />
+          <View
+            style={[
+              styles.skeleton,
+              { height: 100, marginTop: 16, backgroundColor: skeletonColor },
+            ]}
+          />
+        </View>
+
+        <View style={[styles.skeletonPanel, { backgroundColor: cardBackground }]}>
+          <View
+            style={[
+              styles.skeleton,
+              { height: 24, width: 120, backgroundColor: skeletonColor },
+            ]}
+          />
+          <View style={[styles.emptyItems, { borderColor: skeletonColor, opacity: 0.6 }]}>
+            <ThemedText style={styles.emptyText}>Loading items...</ThemedText>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function AddPersonInlineForm({
+  onSubmit,
+  isSubmitting,
+}: {
+  onSubmit: (values: any) => void;
+  isSubmitting: boolean;
+}) {
+  const form = useForm({
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: undefined,
+      phone: undefined,
+      notes: undefined,
+    } as PersonItem,
+    onSubmit: async ({ value }) => {
+      try {
+        onSubmit(value);
+        form.reset();
+      } catch (error) {
+        console.error('Failed to add person:', error);
+      }
+    },
+  });
+
+  return (
+    <View style={styles.inlineForm}>
+      <ThemedText style={styles.inlineFormTitle}>Add New Person</ThemedText>
+
+      <View style={styles.inlineFormRow}>
+        <form.Field name="firstName">
+          {(field) => (
+            <View style={styles.inlineFormField}>
+              <TextInput
+                value={field.state.value}
+                onChangeText={field.handleChange}
+                onBlur={field.handleBlur}
+                placeholder="First Name"
+                style={styles.inlineInput}
               />
             </View>
-            <View
-              style={[styles.emptyItems, { borderColor: skeletonColor, opacity: 0.6 }]}
-            >
-              <ThemedText style={styles.emptyText}>Loading items...</ThemedText>
+          )}
+        </form.Field>
+
+        <form.Field name="lastName">
+          {(field) => (
+            <View style={styles.inlineFormField}>
+              <TextInput
+                value={field.state.value}
+                onChangeText={field.handleChange}
+                onBlur={field.handleBlur}
+                placeholder="Last Name"
+                style={styles.inlineInput}
+              />
+            </View>
+          )}
+        </form.Field>
+      </View>
+
+      <View style={styles.inlineFormRow}>
+        <form.Field name="email">
+          {(field) => (
+            <View style={styles.inlineFormField}>
+              <TextInput
+                value={field.state.value}
+                onChangeText={field.handleChange}
+                onBlur={field.handleBlur}
+                placeholder="Email"
+                style={styles.inlineInput}
+                keyboardType="email-address"
+              />
+            </View>
+          )}
+        </form.Field>
+
+        <form.Field name="phone">
+          {(field) => (
+            <View style={styles.inlineFormField}>
+              <TextInput
+                value={field.state.value}
+                onChangeText={field.handleChange}
+                onBlur={field.handleBlur}
+                placeholder="Phone"
+                style={styles.inlineInput}
+                keyboardType="phone-pad"
+              />
+            </View>
+          )}
+        </form.Field>
+      </View>
+
+      <form.Field name="notes">
+        {(field) => (
+          <View style={styles.inlineFormField}>
+            <TextInput
+              value={field.state.value}
+              onChangeText={field.handleChange}
+              onBlur={field.handleBlur}
+              placeholder="Notes"
+              style={[styles.inlineInput, styles.notesInput]}
+              multiline
+              numberOfLines={2}
+            />
+          </View>
+        )}
+      </form.Field>
+
+      <Button
+        onPress={() => form.handleSubmit()}
+        style={styles.inlineButton}
+        isLoading={isSubmitting}
+      >
+        Add Person
+      </Button>
+    </View>
+  );
+}
+
+function PersonGrid({
+  people,
+  onEditPerson,
+  onDeletePerson,
+  onMovePerson,
+  deletingPersonId,
+}: {
+  people: PersonItem[];
+  onEditPerson: (person: PersonItem) => void;
+  onDeletePerson: (person: PersonItem) => void;
+  onMovePerson: (person: PersonItem) => void;
+  deletingPersonId: string | null;
+}) {
+  const { width } = useWindowDimensions();
+  const cardBackground = useThemeColor({}, 'card');
+  const spinAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (deletingPersonId) {
+      Animated.loop(
+        Animated.timing(spinAnim, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      ).start();
+    } else {
+      spinAnim.setValue(0);
+    }
+  }, [deletingPersonId]);
+
+  const spin = spinAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  // Calculate number of columns based on screen width
+  const numColumns = Math.max(1, Math.floor(width / 350));
+
+  return (
+    <View style={styles.gridContainer}>
+      {people.map((person) => (
+        <View
+          key={person.id}
+          style={[styles.gridItem, { width: `${100 / numColumns}%` }]}
+        >
+          <View style={[styles.gridCard, { backgroundColor: cardBackground }]}>
+            <ThemedText style={styles.personName}>
+              {person.firstName} {person.lastName}
+            </ThemedText>
+
+            {person.email && (
+              <ThemedText style={styles.personDetail}>Email: {person.email}</ThemedText>
+            )}
+
+            {person.phone && (
+              <ThemedText style={styles.personDetail}>Phone: {person.phone}</ThemedText>
+            )}
+
+            {person.notes && (
+              <ThemedText style={styles.personDetail}>Notes: {person.notes}</ThemedText>
+            )}
+
+            <View style={styles.personActions}>
+              <Pressable
+                style={styles.iconButton}
+                onPress={() => onEditPerson(person)}
+              >
+                <Edit size={20} color="#0066ff" />
+              </Pressable>
+              
+              <Pressable
+                style={styles.iconButton}
+                onPress={() => onMovePerson(person)}
+              >
+                <ArrowRightLeft size={20} color="#0066ff" />
+              </Pressable>
+              
+              <Pressable
+                style={[
+                  styles.iconButton, 
+                  styles.deleteIconButton,
+                  deletingPersonId === person.id && styles.deletingIconButton
+                ]}
+                onPress={() => onDeletePerson(person)}
+                disabled={deletingPersonId === person.id}
+              >
+                {deletingPersonId === person.id ? (
+                  <View style={styles.spinnerContainer}>
+                    <Animated.View 
+                      style={[
+                        styles.spinner,
+                        {transform: [{rotate: spin}]}
+                      ]} 
+                    />
+                  </View>
+                ) : (
+                  <Trash2 size={20} color="#ffffff" />
+                )}
+              </Pressable>
             </View>
           </View>
         </View>
-      ) : (
-        <View style={styles.detailsContainer}>
-          <View style={styles.iconContainer}>
-            <ListChecks size={32} color={iconColor} />
-          </View>
-
-          <View style={styles.detailsContent}>
-            <View
-              style={[
-                styles.skeleton,
-                styles.skeletonTitle,
-                { backgroundColor: skeletonColor },
-              ]}
-            />
-
-            <View
-              style={[
-                styles.skeleton,
-                styles.skeletonDescription,
-                { backgroundColor: skeletonColor },
-              ]}
-            />
-
-            <View
-              style={[styles.emptyItems, { borderColor: skeletonColor, opacity: 0.6 }]}
-            >
-              <ThemedText style={styles.emptyText}>Loading items...</ThemedText>
-            </View>
-          </View>
-        </View>
-      )}
+      ))}
     </View>
   );
 }
@@ -134,13 +340,15 @@ export default function ListDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const iconColor = useThemeColor({}, 'text');
   const cardBackground = useThemeColor({}, 'card');
+  const backgroundColor = useThemeColor({}, 'background');
   const { width: screenWidth } = useWindowDimensions();
-  const contentWidth = Math.min(isWeb ? 1400 : 800, screenWidth - 32);
+  const contentWidth = Math.min(isWeb ? 1200 : 800, screenWidth - 32);
 
   const [addPersonModalVisible, setAddPersonModalVisible] = useState(false);
   const [editPersonModalVisible, setEditPersonModalVisible] = useState(false);
   const [movePersonModalVisible, setMovePersonModalVisible] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<PersonItem | null>(null);
+  const [deletingPersonId, setDeletingPersonId] = useState<string | null>(null);
 
   const {
     data: list,
@@ -158,6 +366,7 @@ export default function ListDetailScreen() {
 
   const people = list?.people || [];
   const isPeopleLoading = isLoading;
+  const isDeleting = deletePersonMutation.isPending;
 
   const handleAddPerson = async (values: any) => {
     try {
@@ -165,7 +374,7 @@ export default function ListDetailScreen() {
         ...values,
         listId: id,
       });
-      refetchList();
+      // Cache is updated by the hook
     } catch (error) {
       console.error('Failed to add person:', error);
     }
@@ -178,14 +387,29 @@ export default function ListDetailScreen() {
       await updatePersonMutation.mutateAsync({
         ...values,
         id: selectedPerson.id,
+        listId: id,  // Include current listId
       });
-      refetchList();
+      // Cache is updated by the hook
     } catch (error) {
       console.error('Failed to update person:', error);
     }
   };
 
   const handleDeletePerson = async (person: PersonItem) => {
+    const performDelete = async () => {
+      try {
+        setDeletingPersonId(person.id);
+        await deletePersonMutation.mutateAsync({ 
+          id: person.id,
+          listId: id  // Pass the listId to help the mutation update the correct list
+        });
+      } catch (error) {
+        console.error('Failed to delete person:', error);
+      } finally {
+        setDeletingPersonId(null);
+      }
+    };
+    
     if (Platform.OS === 'web') {
       if (
         !confirm(
@@ -194,6 +418,7 @@ export default function ListDetailScreen() {
       ) {
         return;
       }
+      performDelete();
     } else {
       Alert.alert(
         'Delete Person',
@@ -203,25 +428,10 @@ export default function ListDetailScreen() {
           {
             text: 'Delete',
             style: 'destructive',
-            onPress: async () => {
-              try {
-                await deletePersonMutation.mutateAsync({ id: person.id });
-                refetchList();
-              } catch (error) {
-                console.error('Failed to delete person:', error);
-              }
-            },
+            onPress: performDelete
           },
         ]
       );
-      return;
-    }
-
-    try {
-      await deletePersonMutation.mutateAsync({ id: person.id });
-      refetchList();
-    } catch (error) {
-      console.error('Failed to delete person:', error);
     }
   };
 
@@ -232,13 +442,14 @@ export default function ListDetailScreen() {
       await updatePersonMutation.mutateAsync({
         id: selectedPerson.id,
         listId: targetListId,
+        previousListId: id, // Add previous list ID for proper cache handling
         firstName: selectedPerson.firstName,
         lastName: selectedPerson.lastName,
         email: selectedPerson.email,
         phone: selectedPerson.phone,
         notes: selectedPerson.notes,
       });
-      refetchList();
+      // Cache is updated by the hook
     } catch (error) {
       console.error('Failed to move person:', error);
     }
@@ -315,130 +526,39 @@ export default function ListDetailScreen() {
           {isFetching && <View style={styles.loadingIndicator} />}
         </View>
 
-        {isWeb ? (
-          <View style={styles.webContainer}>
-            <View
-              style={[
-                styles.webPanel,
-                styles.webLeftPanel,
-                { backgroundColor: cardBackground },
-              ]}
-            >
-              <View style={styles.iconContainer}>
-                <ListChecks size={48} color={iconColor} />
-              </View>
-              <ThemedText style={styles.webListName}>{list.name}</ThemedText>
-
-              {list.description ? (
-                <ThemedText style={styles.webDescription}>{list.description}</ThemedText>
-              ) : (
-                <ThemedText style={styles.webNoDescription}>No description</ThemedText>
-              )}
-
-              <View style={styles.webActionButtons}>
-                <View style={styles.buttonWrapper}>
-                  <UserPlus size={16} color="#0066ff" style={styles.buttonIcon} />
-                  <Button
-                    style={styles.actionButton}
-                    onPress={() => setAddPersonModalVisible(true)}
-                  >
-                    Add Person
-                  </Button>
-                </View>
-              </View>
-            </View>
-
-            <View
-              style={[
-                styles.webPanel,
-                styles.webRightPanel,
-                { backgroundColor: cardBackground },
-              ]}
-            >
-              <View style={styles.webPanelHeader}>
-                <ThemedText style={styles.webPanelTitle}>People</ThemedText>
-              </View>
-
-              {isPeopleLoading ? (
-                <View style={styles.loadingContainer}>
-                  <ThemedText>Loading people...</ThemedText>
-                </View>
-              ) : people.length === 0 ? (
-                <View style={styles.emptyItems}>
-                  <ThemedText style={styles.emptyText}>
-                    No people in this list yet
-                  </ThemedText>
-                </View>
-              ) : (
-                <FlatList
-                  data={people}
-                  keyExtractor={(item) => item.id}
-                  renderItem={({ item }) => (
-                    <PersonCard
-                      person={item}
-                      onEdit={() => {
-                        setSelectedPerson(item);
-                        setEditPersonModalVisible(true);
-                      }}
-                      onDelete={() => handleDeletePerson(item)}
-                      onMove={() => {
-                        setSelectedPerson(item);
-                        setMovePersonModalVisible(true);
-                      }}
-                    />
-                  )}
-                  style={styles.peopleList}
-                />
-              )}
-            </View>
-          </View>
-        ) : (
+        <ScrollView 
+          style={styles.scrollContainer}
+          contentContainerStyle={styles.scrollContentContainer}
+          showsVerticalScrollIndicator={isWeb}
+        >
           <View style={styles.detailsContainer}>
-            <View style={styles.iconContainer}>
-              <ListChecks size={32} color={iconColor} />
-            </View>
-
-            <View style={styles.detailsContent}>
-              <ThemedText style={styles.listName}>{list.name}</ThemedText>
-
+          <View style={[styles.compactHeader, { backgroundColor: backgroundColor }]}>
+            <ListChecks size={24} color={iconColor} style={styles.compactIcon} />
+            <View style={styles.compactHeaderText}>
+              <ThemedText style={styles.compactListName}>{list.name}</ThemedText>
               {list.description ? (
-                <ThemedText style={styles.description}>{list.description}</ThemedText>
+                <ThemedText style={styles.compactDescription}>
+                  {list.description}
+                </ThemedText>
               ) : (
                 <ThemedText style={styles.noDescription}>No description</ThemedText>
               )}
+            </View>
+          </View>
 
-              {isPeopleLoading ? (
-                <View style={styles.loadingContainer}>
-                  <ThemedText>Loading people...</ThemedText>
-                </View>
-              ) : people.length === 0 ? (
-                <View style={styles.emptyItems}>
-                  <ThemedText style={styles.emptyText}>
-                    No people in this list yet
-                  </ThemedText>
-                </View>
-              ) : (
-                <FlatList
-                  data={people}
-                  keyExtractor={(item) => item.id}
-                  renderItem={({ item }) => (
-                    <PersonCard
-                      person={item}
-                      onEdit={() => {
-                        setSelectedPerson(item);
-                        setEditPersonModalVisible(true);
-                      }}
-                      onDelete={() => handleDeletePerson(item)}
-                      onMove={() => {
-                        setSelectedPerson(item);
-                        setMovePersonModalVisible(true);
-                      }}
-                    />
-                  )}
-                  style={styles.peopleList}
-                />
-              )}
-
+          <View
+            style={[
+              styles.panel,
+              styles.addPersonPanel,
+              { backgroundColor: cardBackground },
+            ]}
+          >
+            {isWeb ? (
+              <AddPersonInlineForm
+                onSubmit={handleAddPerson}
+                isSubmitting={createPersonMutation.status === 'pending'}
+              />
+            ) : (
               <View style={styles.buttonWrapper}>
                 <UserPlus size={16} color="#0066ff" style={styles.buttonIcon} />
                 <Button
@@ -448,9 +568,67 @@ export default function ListDetailScreen() {
                   Add Person
                 </Button>
               </View>
-            </View>
+            )}
           </View>
-        )}
+
+          {/* People List Section */}
+          <View
+            style={[
+              styles.panel,
+              styles.peoplePanel,
+              { backgroundColor: cardBackground },
+            ]}
+          >
+            <ThemedText style={styles.panelTitle}>People in {list.name}</ThemedText>
+
+            {isPeopleLoading ? (
+              <View style={styles.loadingContainer}>
+                <ThemedText>Loading people...</ThemedText>
+              </View>
+            ) : people.length === 0 ? (
+              <View style={styles.emptyItems}>
+                <ThemedText style={styles.emptyText}>
+                  No people in this list yet
+                </ThemedText>
+              </View>
+            ) : isWeb ? (
+              <PersonGrid
+                people={people}
+                onEditPerson={(person) => {
+                  setSelectedPerson(person);
+                  setEditPersonModalVisible(true);
+                }}
+                onDeletePerson={handleDeletePerson}
+                onMovePerson={(person) => {
+                  setSelectedPerson(person);
+                  setMovePersonModalVisible(true);
+                }}
+                deletingPersonId={deletingPersonId}
+              />
+            ) : (
+              <FlatList
+                data={people}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <PersonCard
+                    person={item}
+                    onEdit={() => {
+                      setSelectedPerson(item);
+                      setEditPersonModalVisible(true);
+                    }}
+                    onDelete={() => handleDeletePerson(item)}
+                    onMove={() => {
+                      setSelectedPerson(item);
+                      setMovePersonModalVisible(true);
+                    }}
+                  />
+                )}
+                style={styles.peopleList}
+              />
+            )}
+          </View>
+          </View>
+        </ScrollView>
 
         {/* Person Management Modals */}
         <AddPersonModal
@@ -501,15 +679,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     padding: 16,
-  },
-  peopleList: {
-    flex: 1,
-    marginBottom: 16,
-  },
-  loadingContainer: {
-    padding: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: 24,
   },
   header: {
     flexDirection: 'row',
@@ -523,112 +693,207 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
   },
-  webContainer: {
-    flexDirection: 'row',
+  scrollContainer: {
+    flex: 1,
     width: '100%',
-    gap: 24,
-    alignSelf: 'center',
-    flexWrap: 'wrap',
   },
-  webPanel: {
-    borderRadius: 12,
-    padding: 24,
+  scrollContentContainer: {
+    flexGrow: 1,
+    paddingBottom: 24,
+  },
+  detailsContainer: {
+    maxWidth: isWeb ? 1200 : 400,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  // Compact header styles
+  compactHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+  },
+  compactHeaderSkeleton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+  },
+  compactIcon: {
+    marginRight: 12,
+  },
+  compactHeaderText: {
+    flex: 1,
+  },
+  compactListName: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  compactDescription: {
+    fontSize: 14,
+    opacity: 0.7,
+    marginTop: 4,
+  },
+  noDescription: {
+    fontSize: 14,
+    opacity: 0.5,
+    marginTop: 4,
+    fontStyle: 'italic',
+  },
+  // Panel styles
+  panel: {
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
   },
-  webLeftPanel: {
-    flex: 1,
-    minWidth: 300,
-    alignItems: 'center',
+  addPersonPanel: {
+    marginBottom: 24,
   },
-  webRightPanel: {
-    flex: 2,
-    minWidth: 400,
+  peoplePanel: {
+    paddingBottom: 24,
   },
-  webPanelHeader: {
+  panelTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     marginBottom: 16,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.1)',
-    paddingBottom: 16,
   },
-  webPanelTitle: {
-    fontSize: 20,
-    fontWeight: '600',
+  // Inline form styles
+  inlineForm: {
+    width: '100%',
   },
-  webListName: {
-    fontSize: 32,
+  inlineFormTitle: {
+    fontSize: 16,
     fontWeight: '600',
-    textAlign: 'center',
+    marginBottom: 12,
+  },
+  inlineFormRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
+  },
+  inlineFormField: {
+    flex: 1,
+  },
+  inlineInput: {
+    width: '100%',
+  },
+  notesInput: {
+    marginBottom: 12,
+  },
+  inlineButton: {
+    marginTop: 8,
+  },
+  // Grid styles
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -8,
+  },
+  gridItem: {
+    paddingHorizontal: 8,
     marginBottom: 16,
   },
-  webDescription: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 32,
-    maxWidth: 600,
+  gridCard: {
+    borderRadius: 8,
+    padding: 16,
+    height: '100%',
   },
-  webNoDescription: {
-    fontSize: 18,
-    textAlign: 'center',
-    opacity: 0.5,
-    marginBottom: 32,
-    fontStyle: 'italic',
+  personName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
   },
-  webActionButtons: {
-    marginTop: 16,
-    width: '100%',
-    maxWidth: 300,
+  personDetail: {
+    fontSize: 14,
+    marginBottom: 4,
+    opacity: 0.8,
   },
-  actionButton: {
-    marginTop: 16,
+  personActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.1)',
+    paddingTop: 12,
   },
-  mobileActionButton: {
-    marginTop: 24,
+  iconButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f0f0f0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 4,
   },
-  buttonWrapper: {
+  deleteIconButton: {
+    backgroundColor: '#ff3b30',
+  },
+  deletingIconButton: {
+    backgroundColor: '#ff3b30',
+    opacity: 0.7,
+  },
+  spinnerContainer: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  spinner: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#ffffff',
+    borderTopColor: 'transparent',
+    opacity: 0.8,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionButtonWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     position: 'relative',
   },
-  buttonIcon: {
-    marginRight: 8,
-    position: 'relative',
+  actionIcon: {
+    marginRight: 6,
+  },
+  deleteText: {
+    color: '#ffffff',
+  },
+  deleteIcon: {
+    position: 'absolute',
+    left: 10,
     zIndex: 1,
   },
-  detailsContainer: {
-    maxWidth: isWeb ? 800 : 400,
-    width: '100%',
-    alignSelf: 'center',
-    borderRadius: 8,
-    backgroundColor: 'transparent',
-  },
+  // Other styles still needed
   iconContainer: {
+    marginRight: 12,
+  },
+  peopleList: {
+    flex: 1,
+  },
+  loadingContainer: {
+    padding: 32,
     alignItems: 'center',
-    marginVertical: 16,
-  },
-  detailsContent: {
-    width: '100%',
-  },
-  listName: {
-    fontSize: isWeb ? 28 : 24,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: isWeb ? 12 : 8,
-  },
-  description: {
-    fontSize: isWeb ? 18 : 16,
-    textAlign: 'center',
-    marginBottom: isWeb ? 32 : 24,
-  },
-  noDescription: {
-    fontSize: isWeb ? 18 : 16,
-    textAlign: 'center',
-    opacity: 0.5,
-    marginBottom: isWeb ? 32 : 24,
-    fontStyle: 'italic',
+    justifyContent: 'center',
   },
   emptyItems: {
     padding: isWeb ? 48 : 32,
@@ -643,21 +908,36 @@ const styles = StyleSheet.create({
     opacity: 0.6,
     fontSize: isWeb ? 16 : 14,
   },
+  buttonWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  buttonIcon: {
+    marginRight: 8,
+    position: 'relative',
+    zIndex: 1,
+  },
+  mobileActionButton: {
+    flex: 1,
+  },
+  // Skeleton styles
+  skeletonPanel: {
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 24,
+  },
   skeleton: {
     borderRadius: 4,
     overflow: 'hidden',
   },
   skeletonTitle: {
-    height: isWeb ? 32 : 24,
-    width: isWeb ? '40%' : '60%',
-    alignSelf: 'center',
-    marginBottom: 8,
+    height: 20,
+    width: 200,
   },
   skeletonDescription: {
-    height: isWeb ? 18 : 16,
-    width: isWeb ? '60%' : '80%',
-    alignSelf: 'center',
-    marginBottom: isWeb ? 32 : 24,
+    height: 16,
+    width: 250,
+    marginLeft: 12,
   },
   loadingIndicator: {
     width: 8,

@@ -109,7 +109,7 @@ export default function CreateClassScreen() {
       <View style={[styles.content]}>
         <View style={[styles.leftPanel, { borderRightColor: borderColor }]}>
           <View style={styles.header}>
-            <Pressable onPress={() => router.push('/people')} style={styles.backButton}>
+            <Pressable onPress={() => router.push('/')} style={styles.backButton}>
               <ArrowLeft size={24} color={iconColor} />
             </Pressable>
             <ThemedText type="title">Create Seating Chart</ThemedText>

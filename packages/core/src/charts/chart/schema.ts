@@ -7,7 +7,7 @@ export namespace ChartSchemas {
     description: v.optional(v.string()),
     width: v.optional(v.number()),
     height: v.optional(v.number()),
-    contactListIds: v.optional(v.array(v.string())),
+    listIds: v.optional(v.array(v.string())),
     id: v.optional(v.string()),
   });
 
@@ -16,7 +16,7 @@ export namespace ChartSchemas {
     description: v.optional(v.string()),
     width: v.optional(v.number()),
     height: v.optional(v.number()),
-    contactListIds: v.optional(v.array(v.string())),
+    listIds: v.optional(v.array(v.string())),
     status: v.optional(v.union([v.literal('ACTIVE'), v.literal('ARCHIVED')])),
   });
 

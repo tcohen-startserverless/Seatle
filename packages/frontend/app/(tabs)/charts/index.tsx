@@ -13,7 +13,7 @@ export default function ChartsScreen() {
     <ThemedView style={styles.container}>
       <View style={[styles.content, { width: contentWidth }]}>
         <View style={styles.header}>
-          <ThemedText type="title">Classes</ThemedText>
+          <ThemedText type="title">Charts</ThemedText>
         </View>
         <FAB onPress={() => router.push('/charts/create')} />
       </View>

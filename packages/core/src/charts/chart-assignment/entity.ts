@@ -1,9 +1,9 @@
 import { Entity, EntityItem } from 'electrodb';
 import { ulid } from 'ulid';
 
-export const Chart = new Entity({
+export const ChartAssignment = new Entity({
   model: {
-    entity: 'chart',
+    entity: 'chartAssignment',
     version: '1',
     service: 'app',
   },
@@ -13,37 +13,25 @@ export const Chart = new Entity({
       required: true,
       default: () => ulid(),
     },
+    chartId: {
+      type: 'string',
+      required: true,
+    },
     userId: {
       type: 'string',
       required: true,
     },
-    name: {
+    chartItemId: {
       type: 'string',
       required: true,
     },
-    description: {
+    personId: {
       type: 'string',
-      required: false,
+      required: true,
     },
-    listIds: {
-      type: 'set',
-      items: 'string',
-      required: false,
-    },
-    width: {
+    seatIndex: {
       type: 'number',
-      required: true,
-      default: 800,
-    },
-    height: {
-      type: 'number',
-      required: true,
-      default: 600,
-    },
-    status: {
-      type: ['ACTIVE', 'ARCHIVED'] as const,
-      required: true,
-      default: 'ACTIVE',
+      required: false,
     },
     createdAt: {
       type: 'number',
@@ -67,7 +55,7 @@ export const Chart = new Entity({
         composite: ['id'],
       },
     },
-    byStatus: {
+    byChart: {
       index: 'GSI1',
       pk: {
         field: 'gsi1pk',
@@ -75,10 +63,21 @@ export const Chart = new Entity({
       },
       sk: {
         field: 'gsi1sk',
-        composite: ['status', 'createdAt'],
+        composite: ['chartId', 'chartItemId'],
+      },
+    },
+    byPerson: {
+      index: 'GSI2',
+      pk: {
+        field: 'gsi2pk',
+        composite: ['userId'],
+      },
+      sk: {
+        field: 'gsi2sk',
+        composite: ['personId', 'chartId'],
       },
     },
   },
 });
 
-export type ChartItem = EntityItem<typeof Chart>;
+export type ChartAssignmentEntity = EntityItem<typeof ChartAssignment>;

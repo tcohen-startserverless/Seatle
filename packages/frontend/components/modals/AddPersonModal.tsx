@@ -24,19 +24,11 @@ export function AddPersonModal({
   listId,
 }: AddPersonModalProps) {
   const iconColor = useThemeColor({}, 'text');
-  const backgroundColor = useThemeColor({}, 'background');
 
   return (
-    <Modal
-      visible={visible}
-      onRequestClose={onClose}
-      transparent
-      animationType="fade"
-    >
+    <Modal visible={visible} onRequestClose={onClose} transparent animationType="fade">
       <View style={styles.overlay}>
-        <ThemedView
-          style={[styles.modalContent, { maxWidth: isWeb ? 500 : '90%' }]}
-        >
+        <ThemedView style={[styles.modalContent, { maxWidth: isWeb ? 500 : '90%' }]}>
           <View style={styles.modalHeader}>
             <ThemedText type="title">Add Person</ThemedText>
             <Pressable onPress={onClose} style={styles.closeButton}>

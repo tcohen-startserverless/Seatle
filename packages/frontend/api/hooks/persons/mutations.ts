@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useApiClient } from '@/api';
 import { personKeys } from './keys';
+import { listKeys } from '../lists/keys';
 import { PersonSchema } from '@core/person';
 import type { PersonItem } from '@core/person';
 import { Schemas } from '@core/schema';
@@ -17,10 +18,25 @@ export const useCreatePerson = () => {
       });
       return res.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: personKeys.byPerson(data.userId, data.id),
       });
+      
+      if (variables.listId) {
+        const listId = variables.listId;
+        queryClient.setQueryData(
+          listKeys.detail(listId),
+          (oldData: any) => {
+            if (!oldData) return oldData;
+            
+            return {
+              ...oldData,
+              people: [...(oldData.people || []), data],
+            };
+          }
+        );
+      }
     },
   });
 };
@@ -28,7 +44,9 @@ export const useCreatePerson = () => {
 export const useUpdatePerson = () => {
   const queryClient = useQueryClient();
   const { client } = useApiClient();
-  type UpdateParams = Schemas.Types.Params & PersonSchema.Types.Patch;
+  type UpdateParams = Schemas.Types.Params & PersonSchema.Types.Patch & {
+    previousListId?: string;
+  };
 
   return useMutation<
     PersonItem,
@@ -64,9 +82,48 @@ export const useUpdatePerson = () => {
         queryClient.setQueryData(personKeys.detail(variables.id), context.previousPerson);
       }
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: personKeys.detail(data.id) });
       queryClient.invalidateQueries({ queryKey: personKeys.persons() });
+      
+      if (variables.listId) {
+        if (variables.previousListId && variables.previousListId !== variables.listId) {
+          queryClient.setQueryData(
+            listKeys.detail(variables.previousListId),
+            (oldData: any) => {
+              if (!oldData) return oldData;
+              return {
+                ...oldData,
+                people: oldData.people.filter((p: PersonItem) => p.id !== data.id),
+              };
+            }
+          );
+          
+          queryClient.setQueryData(
+            listKeys.detail(variables.listId),
+            (oldData: any) => {
+              if (!oldData) return oldData;
+              return {
+                ...oldData,
+                people: [...(oldData.people || []), data],
+              };
+            }
+          );
+        } else {
+          queryClient.setQueryData(
+            listKeys.detail(variables.listId),
+            (oldData: any) => {
+              if (!oldData) return oldData;
+              return {
+                ...oldData,
+                people: oldData.people.map((p: PersonItem) => 
+                  p.id === data.id ? data : p
+                ),
+              };
+            }
+          );
+        }
+      }
     },
   });
 };
@@ -74,13 +131,13 @@ export const useUpdatePerson = () => {
 export const useDeletePerson = () => {
   const queryClient = useQueryClient();
   const { client } = useApiClient();
-  type DeleteParams = Schemas.Types.Params;
+  type DeleteParams = Schemas.Types.Params & { listId?: string };
 
   return useMutation<
     { userId: string; id: string } | null,
     Error,
     DeleteParams,
-    { previousPerson?: PersonItem | null }
+    { previousPerson?: PersonItem | null; listId?: string }
   >({
     mutationFn: async ({ id }) => {
       if (!client) throw new Error('API client not initialized');
@@ -89,11 +146,17 @@ export const useDeletePerson = () => {
       });
       return res.json();
     },
-    onMutate: async ({ id }) => {
+    onMutate: async ({ id, listId }) => {
       await queryClient.cancelQueries({ queryKey: personKeys.detail(id) });
+      if (listId) {
+        await queryClient.cancelQueries({ queryKey: listKeys.detail(listId) });
+      }
+      
       const previousPerson = queryClient.getQueryData<PersonItem | null>(
         personKeys.detail(id)
       );
+      
+      const effectiveListId = listId || previousPerson?.listId;
 
       queryClient.setQueryData(personKeys.detail(id), undefined);
 
@@ -107,18 +170,50 @@ export const useDeletePerson = () => {
               }
             : undefined
       );
+      
+      if (effectiveListId) {
+        queryClient.setQueryData(
+          listKeys.detail(effectiveListId),
+          (oldData: any) => {
+            if (!oldData || !oldData.people) return oldData;
+            return {
+              ...oldData,
+              people: oldData.people.filter((p: PersonItem) => p.id !== id),
+            };
+          }
+        );
+      }
 
-      return { previousPerson };
+      return { previousPerson, listId: effectiveListId };
     },
     onError: (_, variables, context) => {
       if (context?.previousPerson) {
         queryClient.setQueryData(personKeys.detail(variables.id), context.previousPerson);
       }
+      
+      if (context?.listId) {
+        queryClient.invalidateQueries({ queryKey: listKeys.detail(context.listId) });
+      }
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables, context) => {
       if (!data) return;
       queryClient.invalidateQueries({ queryKey: personKeys.detail(data.id) });
       queryClient.invalidateQueries({ queryKey: personKeys.persons() });
+      
+      // The optimistic update in onMutate already removed the person from the list,
+      // so we don't need to do it again here. But we might want to invalidate the 
+      // list query to ensure data consistency with the server.
+      const effectiveListId = variables.listId || context?.listId || context?.previousPerson?.listId;
+      if (effectiveListId) {
+        // Instead of invalidating (which causes a fetch), we could just verify our
+        // optimistic update is correct. But invalidating is safer if there might be
+        // other changes we don't know about.
+        queryClient.invalidateQueries({ 
+          queryKey: listKeys.detail(effectiveListId),
+          // Don't refetch immediately - let the component decide when to refetch
+          refetchType: 'none'
+        });
+      }
     },
   });
 };

@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 
-export default function ClassesLayout() {
+export default function ChartsLayout() {
   return (
     <Stack>
       <Stack.Screen
