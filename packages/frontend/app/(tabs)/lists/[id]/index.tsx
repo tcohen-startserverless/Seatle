@@ -12,7 +12,14 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { ArrowLeft, ListChecks, UserPlus, Edit, ArrowRightLeft, Trash2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  ListChecks,
+  UserPlus,
+  Edit,
+  ArrowRightLeft,
+  Trash2,
+} from 'lucide-react';
 import { useGetList } from '@/api/hooks/lists';
 import { Button } from '@/components/Button';
 import { AddPersonModal } from '@/components/modals/AddPersonModal';
@@ -21,7 +28,7 @@ import { MovePersonModal } from '@/components/modals/MovePersonModal';
 import { PersonCard } from '@/components/ui/PersonCard';
 import { useState, useRef, useEffect } from 'react';
 import { useCreatePerson, useDeletePerson, useUpdatePerson } from '@/api/hooks/persons';
-import type { PersonItem } from '@core/person';
+import type { PersonItem } from '@seater/core/person';
 import { Animated, Easing } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { listKeys } from '@/api/hooks/lists/keys';
@@ -291,36 +298,27 @@ function PersonGrid({
             )}
 
             <View style={styles.personActions}>
-              <Pressable
-                style={styles.iconButton}
-                onPress={() => onEditPerson(person)}
-              >
+              <Pressable style={styles.iconButton} onPress={() => onEditPerson(person)}>
                 <Edit size={20} color="#0066ff" />
               </Pressable>
-              
-              <Pressable
-                style={styles.iconButton}
-                onPress={() => onMovePerson(person)}
-              >
+
+              <Pressable style={styles.iconButton} onPress={() => onMovePerson(person)}>
                 <ArrowRightLeft size={20} color="#0066ff" />
               </Pressable>
-              
+
               <Pressable
                 style={[
-                  styles.iconButton, 
+                  styles.iconButton,
                   styles.deleteIconButton,
-                  deletingPersonId === person.id && styles.deletingIconButton
+                  deletingPersonId === person.id && styles.deletingIconButton,
                 ]}
                 onPress={() => onDeletePerson(person)}
                 disabled={deletingPersonId === person.id}
               >
                 {deletingPersonId === person.id ? (
                   <View style={styles.spinnerContainer}>
-                    <Animated.View 
-                      style={[
-                        styles.spinner,
-                        {transform: [{rotate: spin}]}
-                      ]} 
+                    <Animated.View
+                      style={[styles.spinner, { transform: [{ rotate: spin }] }]}
                     />
                   </View>
                 ) : (
@@ -387,7 +385,7 @@ export default function ListDetailScreen() {
       await updatePersonMutation.mutateAsync({
         ...values,
         id: selectedPerson.id,
-        listId: id,  // Include current listId
+        listId: id, // Include current listId
       });
       // Cache is updated by the hook
     } catch (error) {
@@ -399,9 +397,9 @@ export default function ListDetailScreen() {
     const performDelete = async () => {
       try {
         setDeletingPersonId(person.id);
-        await deletePersonMutation.mutateAsync({ 
+        await deletePersonMutation.mutateAsync({
           id: person.id,
-          listId: id  // Pass the listId to help the mutation update the correct list
+          listId: id, // Pass the listId to help the mutation update the correct list
         });
       } catch (error) {
         console.error('Failed to delete person:', error);
@@ -409,7 +407,7 @@ export default function ListDetailScreen() {
         setDeletingPersonId(null);
       }
     };
-    
+
     if (Platform.OS === 'web') {
       if (
         !confirm(
@@ -428,7 +426,7 @@ export default function ListDetailScreen() {
           {
             text: 'Delete',
             style: 'destructive',
-            onPress: performDelete
+            onPress: performDelete,
           },
         ]
       );
@@ -526,107 +524,107 @@ export default function ListDetailScreen() {
           {isFetching && <View style={styles.loadingIndicator} />}
         </View>
 
-        <ScrollView 
+        <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={styles.scrollContentContainer}
           showsVerticalScrollIndicator={isWeb}
         >
           <View style={styles.detailsContainer}>
-          <View style={[styles.compactHeader, { backgroundColor: backgroundColor }]}>
-            <ListChecks size={24} color={iconColor} style={styles.compactIcon} />
-            <View style={styles.compactHeaderText}>
-              <ThemedText style={styles.compactListName}>{list.name}</ThemedText>
-              {list.description ? (
-                <ThemedText style={styles.compactDescription}>
-                  {list.description}
-                </ThemedText>
+            <View style={[styles.compactHeader, { backgroundColor: backgroundColor }]}>
+              <ListChecks size={24} color={iconColor} style={styles.compactIcon} />
+              <View style={styles.compactHeaderText}>
+                <ThemedText style={styles.compactListName}>{list.name}</ThemedText>
+                {list.description ? (
+                  <ThemedText style={styles.compactDescription}>
+                    {list.description}
+                  </ThemedText>
+                ) : (
+                  <ThemedText style={styles.noDescription}>No description</ThemedText>
+                )}
+              </View>
+            </View>
+
+            <View
+              style={[
+                styles.panel,
+                styles.addPersonPanel,
+                { backgroundColor: cardBackground },
+              ]}
+            >
+              {isWeb ? (
+                <AddPersonInlineForm
+                  onSubmit={handleAddPerson}
+                  isSubmitting={createPersonMutation.status === 'pending'}
+                />
               ) : (
-                <ThemedText style={styles.noDescription}>No description</ThemedText>
+                <View style={styles.buttonWrapper}>
+                  <UserPlus size={16} color="#0066ff" style={styles.buttonIcon} />
+                  <Button
+                    style={styles.mobileActionButton}
+                    onPress={() => setAddPersonModalVisible(true)}
+                  >
+                    Add Person
+                  </Button>
+                </View>
               )}
             </View>
-          </View>
 
-          <View
-            style={[
-              styles.panel,
-              styles.addPersonPanel,
-              { backgroundColor: cardBackground },
-            ]}
-          >
-            {isWeb ? (
-              <AddPersonInlineForm
-                onSubmit={handleAddPerson}
-                isSubmitting={createPersonMutation.status === 'pending'}
-              />
-            ) : (
-              <View style={styles.buttonWrapper}>
-                <UserPlus size={16} color="#0066ff" style={styles.buttonIcon} />
-                <Button
-                  style={styles.mobileActionButton}
-                  onPress={() => setAddPersonModalVisible(true)}
-                >
-                  Add Person
-                </Button>
-              </View>
-            )}
-          </View>
+            {/* People List Section */}
+            <View
+              style={[
+                styles.panel,
+                styles.peoplePanel,
+                { backgroundColor: cardBackground },
+              ]}
+            >
+              <ThemedText style={styles.panelTitle}>People in {list.name}</ThemedText>
 
-          {/* People List Section */}
-          <View
-            style={[
-              styles.panel,
-              styles.peoplePanel,
-              { backgroundColor: cardBackground },
-            ]}
-          >
-            <ThemedText style={styles.panelTitle}>People in {list.name}</ThemedText>
-
-            {isPeopleLoading ? (
-              <View style={styles.loadingContainer}>
-                <ThemedText>Loading people...</ThemedText>
-              </View>
-            ) : people.length === 0 ? (
-              <View style={styles.emptyItems}>
-                <ThemedText style={styles.emptyText}>
-                  No people in this list yet
-                </ThemedText>
-              </View>
-            ) : isWeb ? (
-              <PersonGrid
-                people={people}
-                onEditPerson={(person) => {
-                  setSelectedPerson(person);
-                  setEditPersonModalVisible(true);
-                }}
-                onDeletePerson={handleDeletePerson}
-                onMovePerson={(person) => {
-                  setSelectedPerson(person);
-                  setMovePersonModalVisible(true);
-                }}
-                deletingPersonId={deletingPersonId}
-              />
-            ) : (
-              <FlatList
-                data={people}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                  <PersonCard
-                    person={item}
-                    onEdit={() => {
-                      setSelectedPerson(item);
-                      setEditPersonModalVisible(true);
-                    }}
-                    onDelete={() => handleDeletePerson(item)}
-                    onMove={() => {
-                      setSelectedPerson(item);
-                      setMovePersonModalVisible(true);
-                    }}
-                  />
-                )}
-                style={styles.peopleList}
-              />
-            )}
-          </View>
+              {isPeopleLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ThemedText>Loading people...</ThemedText>
+                </View>
+              ) : people.length === 0 ? (
+                <View style={styles.emptyItems}>
+                  <ThemedText style={styles.emptyText}>
+                    No people in this list yet
+                  </ThemedText>
+                </View>
+              ) : isWeb ? (
+                <PersonGrid
+                  people={people}
+                  onEditPerson={(person) => {
+                    setSelectedPerson(person);
+                    setEditPersonModalVisible(true);
+                  }}
+                  onDeletePerson={handleDeletePerson}
+                  onMovePerson={(person) => {
+                    setSelectedPerson(person);
+                    setMovePersonModalVisible(true);
+                  }}
+                  deletingPersonId={deletingPersonId}
+                />
+              ) : (
+                <FlatList
+                  data={people}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item }) => (
+                    <PersonCard
+                      person={item}
+                      onEdit={() => {
+                        setSelectedPerson(item);
+                        setEditPersonModalVisible(true);
+                      }}
+                      onDelete={() => handleDeletePerson(item)}
+                      onMove={() => {
+                        setSelectedPerson(item);
+                        setMovePersonModalVisible(true);
+                      }}
+                    />
+                  )}
+                  style={styles.peopleList}
+                />
+              )}
+            </View>
           </View>
         </ScrollView>
 

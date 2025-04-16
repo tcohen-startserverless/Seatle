@@ -1,6 +1,6 @@
 import { vValidator } from '@hono/valibot-validator';
 import { Hono } from 'hono';
-import { PersonSchema, PersonService } from '@core/person';
+import { PersonSchema, PersonService } from '@seater/core/person';
 import { Schemas } from '@core/schema';
 import { Enviroment } from '@functions/auth/middleware';
 
@@ -13,12 +13,18 @@ export default app
     const person = await PersonService.create(ctx, data);
     return c.json(person, 201);
   })
-  .get('/', vValidator('query', Schemas.Pagination), async (c) => {
-    const ctx = c.get('ctx');
-    const pagination = c.req.valid('query');
-    const res = await PersonService.list(ctx, pagination);
-    return c.json(res);
-  })
+  .get(
+    '/',
+    vValidator('query', Schemas.Pagination),
+    vValidator('param', Schemas.Params),
+    async (c) => {
+      const ctx = c.get('ctx');
+      const pagination = c.req.valid('query');
+      const params = c.req.valid('param');
+      const res = await PersonService.list(ctx, params, pagination);
+      return c.json(res);
+    }
+  )
   .get('/:id', async (c) => {
     const ctx = c.get('ctx');
     const id = c.req.param('id');

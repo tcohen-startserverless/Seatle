@@ -64,7 +64,7 @@ const VerticalNavbar = () => {
     <View style={[styles.navbar, { backgroundColor, borderRightColor: borderColor }]}>
       <View style={styles.navContent}>
         <View style={styles.logo}>
-          <ThemedText style={styles.logoText}>Seater</ThemedText>
+          <ThemedText style={styles.logoText}>Seatle</ThemedText>
         </View>
 
         <View style={styles.navItems}>

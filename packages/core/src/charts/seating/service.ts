@@ -1,35 +1,66 @@
 import { DB } from '@core/dynamo';
 import { SeatingSchemas } from './schema';
+import { Schemas } from '@core/schema';
 
 export namespace SeatingService {
-  export const create = async (input: SeatingSchemas.Types.Create) => {
-    const res = await DB.entities.Seating.create(input).go();
+  export const create = async (
+    ctx: Schemas.Types.Context,
+    input: SeatingSchemas.Types.Create
+  ) => {
+    const res = await DB.entities.Seating.create({
+      userId: ctx.userId,
+      ...input,
+    }).go();
     return res.data;
   };
 
-  export const get = async (input: SeatingSchemas.Types.Get) => {
-    const res = await DB.entities.Seating.get(input).go();
+  export const get = async (
+    ctx: Schemas.Types.Context,
+    params: Schemas.Types.Params & SeatingSchemas.Types.Key
+  ) => {
+    const res = await DB.entities.Seating.get({
+      userId: ctx.userId,
+      ...params,
+    }).go();
     return res.data;
   };
 
-  export const list = async (input: SeatingSchemas.Types.List) => {
-    const { cursor, ...key } = input;
-    const res = await DB.entities.Seating.query.primary(key).go({
-      cursor,
-    });
+  export const list = async (
+    ctx: Schemas.Types.Context,
+    input: Schemas.Types.Params,
+    pagination: Schemas.Types.Pagination
+  ) => {
+    const res = await DB.entities.Seating.query
+      .primary({
+        userId: ctx.userId,
+        ...input,
+      })
+      .go(pagination);
     return res;
   };
 
   export const patch = async (
-    params: SeatingSchemas.Types.Get,
+    ctx: Schemas.Types.Context,
+    params: Schemas.Types.Params & SeatingSchemas.Types.Key,
     input: SeatingSchemas.Types.Patch
   ) => {
-    const res = await DB.entities.Seating.patch(params).set(input).go();
+    const res = await DB.entities.Seating.patch({
+      userId: ctx.userId,
+      ...params,
+    })
+      .set(input)
+      .go();
     return res.data;
   };
 
-  export const remove = async (params: SeatingSchemas.Types.Get) => {
-    const res = await DB.entities.Seating.remove(params).go();
+  export const remove = async (
+    ctx: Schemas.Types.Context,
+    params: Schemas.Types.Params & SeatingSchemas.Types.Key
+  ) => {
+    const res = await DB.entities.Seating.remove({
+      userId: ctx.userId,
+      ...params,
+    }).go();
     return res.data;
   };
 }

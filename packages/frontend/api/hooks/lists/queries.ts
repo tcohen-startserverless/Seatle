@@ -3,7 +3,7 @@ import { useApiClient } from '@/api';
 import { listKeys } from './keys';
 import { Schemas } from '@core/schema';
 import { ListSchemas } from '@core/list';
-import type { ListItem, CompleteList } from '@core/list';
+import type { ListItem, CompleteList, ListQueryResponse } from '@core/list';
 
 export const useGetList = (params: Schemas.Types.Params) => {
   const { client, isLoading: clientLoading } = useApiClient();
@@ -38,7 +38,7 @@ export const useGetList = (params: Schemas.Types.Params) => {
 export const useListLists = (params?: Schemas.Types.Pagination) => {
   const { client, isLoading: clientLoading } = useApiClient();
 
-  return useQuery<{ data: ListItem[]; cursor?: string }, Error>({
+  return useQuery<ListQueryResponse, Error>({
     queryKey: listKeys.list(params),
     queryFn: async () => {
       if (!client) throw new Error('API client not initialized');
@@ -48,11 +48,7 @@ export const useListLists = (params?: Schemas.Types.Pagination) => {
           limit: params?.limit?.toString(),
         },
       });
-      const result = await res.json();
-      return {
-        data: result.data,
-        cursor: result.cursor || undefined,
-      };
+      return await res.json();
     },
     enabled: !!client && !clientLoading,
   });
@@ -63,7 +59,7 @@ export const useListListsByStatus = (
 ) => {
   const { client, isLoading: clientLoading } = useApiClient();
 
-  return useQuery<{ data: ListItem[]; cursor?: string }, Error>({
+  return useQuery<ListQueryResponse, Error>({
     queryKey: listKeys.list({ status: params.status, cursor: params.cursor }),
     queryFn: async () => {
       if (!client) throw new Error('API client not initialized');
@@ -74,11 +70,7 @@ export const useListListsByStatus = (
           limit: params?.limit?.toString(),
         },
       });
-      const result = await res.json();
-      return {
-        data: result.data,
-        cursor: result.cursor || undefined,
-      };
+      return await res.json();
     },
     enabled: !!client && !clientLoading,
   });

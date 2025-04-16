@@ -1,3 +1,4 @@
 export * from './chart';
-export * from './chart-item';
-export * from './chart-assignment';
+export * from './seat';
+export * from './seating';
+export * from './types';

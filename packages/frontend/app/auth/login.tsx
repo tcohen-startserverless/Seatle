@@ -28,7 +28,7 @@ export default function LoginScreen() {
     <ThemedView style={styles.container}>
       <View style={styles.content}>
         <ThemedText type="title" style={styles.title}>
-          Welcome to Seater
+          Welcome to Seatle
         </ThemedText>
         <ThemedText style={styles.subtitle}>
           Sign in to manage your classroom seating charts

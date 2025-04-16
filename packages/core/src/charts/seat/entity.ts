@@ -9,6 +9,7 @@ export const Seat = new Entity({
   },
   attributes: {
     id: {
+      label: 'seatId',
       type: 'string',
       required: true,
       default: () => ulid(),
@@ -74,6 +75,8 @@ export const Seat = new Entity({
   },
   indexes: {
     primary: {
+      collection: 'charts',
+      type: 'clustered',
       pk: {
         field: 'pk',
         composite: ['userId'],

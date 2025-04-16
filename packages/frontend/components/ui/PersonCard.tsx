@@ -1,7 +1,7 @@
 import { StyleSheet, View, Pressable, Platform } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { PersonItem } from '@core/person';
+import { PersonItem } from '@seater/core/person';
 import { Edit, Trash, ArrowRightLeft } from 'lucide-react';
 
 type PersonCardProps = {
@@ -16,7 +16,7 @@ const isWeb = Platform.OS === 'web';
 export function PersonCard({ person, onEdit, onDelete, onMove }: PersonCardProps) {
   const iconColor = useThemeColor({}, 'text');
   const cardBackground = useThemeColor({}, 'card');
-  
+
   return (
     <View style={[styles.card, { backgroundColor: cardBackground }]}>
       <View style={styles.cardContent}>
@@ -25,20 +25,18 @@ export function PersonCard({ person, onEdit, onDelete, onMove }: PersonCardProps
             {person.firstName} {person.lastName}
           </ThemedText>
         </View>
-        
+
         {person.email && (
           <ThemedText style={styles.detail}>Email: {person.email}</ThemedText>
         )}
-        
+
         {person.phone && (
           <ThemedText style={styles.detail}>Phone: {person.phone}</ThemedText>
         )}
-        
-        {person.notes && (
-          <ThemedText style={styles.notes}>{person.notes}</ThemedText>
-        )}
+
+        {person.notes && <ThemedText style={styles.notes}>{person.notes}</ThemedText>}
       </View>
-      
+
       <View style={styles.actions}>
         {onEdit && (
           <Pressable onPress={onEdit} style={styles.actionButton}>

@@ -1,4 +1,5 @@
 import * as v from 'valibot';
+import { Schemas } from '@core/schema';
 
 export namespace SeatSchemas {
   const SeatTypes = v.union([
@@ -10,7 +11,6 @@ export namespace SeatSchemas {
 
   export const Create = v.object({
     id: v.optional(v.string()),
-    userId: v.string(),
     chartId: v.string(),
     personId: v.optional(v.string()),
     x: v.number(),
@@ -23,31 +23,32 @@ export namespace SeatSchemas {
     notes: v.optional(v.string()),
   });
 
-  export const Patch = v.partial(v.omit(Create, ['chartId', 'id', 'userId']));
+  export const Patch = v.partial(Create);
 
-  export const Get = v.object({
-    userId: v.string(),
+  export const ChartIdParam = v.object({
     chartId: v.string(),
-    id: v.string(),
   });
 
-  export const ListByChart = v.object({
-    ...Get.entries,
-    cursor: v.optional(v.string()),
+  export const NestedParams = v.object({
+    ...Schemas.Params.entries,
+    ...ChartIdParam.entries,
+  });
+
+  export const Key = v.object({
+    chartId: v.string(),
   });
 
   export const ListByPerson = v.object({
-    userId: v.string(),
     personId: v.optional(v.string()),
     chartId: v.optional(v.string()),
-    cursor: v.optional(v.string()),
   });
 
   export namespace Types {
     export type Create = v.InferInput<typeof Create>;
     export type Patch = v.InferInput<typeof Patch>;
-    export type Get = v.InferInput<typeof Get>;
-    export type ListByChart = v.InferInput<typeof ListByChart>;
+    export type ChartIdParam = v.InferInput<typeof ChartIdParam>;
+    export type NestedParams = v.InferInput<typeof NestedParams>;
+    export type Key = v.InferInput<typeof Key>;
     export type ListByPerson = v.InferInput<typeof ListByPerson>;
   }
 }

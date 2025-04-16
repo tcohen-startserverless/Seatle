@@ -3,30 +3,34 @@ import { useApiClient } from '@/api';
 import { chartKeys } from './keys';
 import { Schemas } from '@core/schema';
 import { ChartSchemas } from '@core/charts/chart';
-import type { ChartItem, CompleteChart } from '@core/charts/chart';
+import { ChartsResponse, ChartQueryResponse } from '@core/charts';
 
 export const useGetChart = (params: Schemas.Types.Params) => {
   const { client, isLoading: clientLoading } = useApiClient();
   const queryClient = useQueryClient();
 
-  return useQuery<CompleteChart | null, Error>({
+  return useQuery<ChartsResponse | null, Error>({
     queryKey: chartKeys.detail(params.id),
     queryFn: async () => {
       if (!client) throw new Error('API client not initialized');
       const res = await client.chart[':id'].$get({
         param: params,
       });
-      return res.json();
+      return await res.json();
     },
     placeholderData: () => {
-      const chartsData = queryClient.getQueryData<{ data: ChartItem[] }>(chartKeys.charts());
-      const cachedChart = chartsData?.data?.find((item) => item.id === params.id);
+      const chartsData = queryClient.getQueryData<ChartsResponse>(chartKeys.charts());
+      const cachedChart = chartsData?.data?.Chart?.find(
+        (item) => item.chartId === params.id
+      );
       if (cachedChart) {
         return {
-          ...cachedChart,
-          items: [],
-          assignments: [],
-          lists: [],
+          data: {
+            Chart: [cachedChart],
+            Seat: [],
+            Seating: [],
+          },
+          cursor: null,
         };
       }
       return null;
@@ -40,7 +44,7 @@ export const useGetChart = (params: Schemas.Types.Params) => {
 export const useListCharts = (params?: Schemas.Types.Pagination) => {
   const { client, isLoading: clientLoading } = useApiClient();
 
-  return useQuery<{ data: ChartItem[]; cursor?: string }, Error>({
+  return useQuery<ChartQueryResponse, Error>({
     queryKey: chartKeys.list(params),
     queryFn: async () => {
       if (!client) throw new Error('API client not initialized');
@@ -51,22 +55,22 @@ export const useListCharts = (params?: Schemas.Types.Pagination) => {
         },
       });
       const result = await res.json();
-      return {
-        data: result.data,
-        cursor: result.cursor || undefined,
-      };
+      return result;
     },
     enabled: !!client && !clientLoading,
   });
 };
 
 export const useListChartsByStatus = (
-  params: ChartSchemas.Types.ListByStatusInput & Schemas.Types.Pagination
+  params: ChartSchemas.Types.ListByStatus & Schemas.Types.Pagination
 ) => {
   const { client, isLoading: clientLoading } = useApiClient();
 
-  return useQuery<{ data: ChartItem[]; cursor?: string }, Error>({
-    queryKey: chartKeys.list({ status: params.status, cursor: params.cursor }),
+  return useQuery<ChartQueryResponse, Error>({
+    queryKey: chartKeys.list({
+      status: params.status,
+      cursor: params.cursor,
+    }),
     queryFn: async () => {
       if (!client) throw new Error('API client not initialized');
       const res = await client.chart.status[':status'].$get({
@@ -76,11 +80,7 @@ export const useListChartsByStatus = (
           limit: params?.limit?.toString(),
         },
       });
-      const result = await res.json();
-      return {
-        data: result.data,
-        cursor: result.cursor || undefined,
-      };
+      return await res.json();
     },
     enabled: !!client && !clientLoading,
   });

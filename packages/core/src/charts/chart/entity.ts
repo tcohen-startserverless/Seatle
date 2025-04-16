@@ -8,7 +8,7 @@ export const Chart = new Entity({
     service: 'app',
   },
   attributes: {
-    id: {
+    chartId: {
       type: 'string',
       required: true,
       default: () => ulid(),
@@ -25,10 +25,9 @@ export const Chart = new Entity({
       type: 'string',
       required: false,
     },
-    listIds: {
-      type: 'set',
-      items: 'string',
-      required: false,
+    listId: {
+      type: 'string',
+      required: true,
     },
     width: {
       type: 'number',
@@ -58,13 +57,15 @@ export const Chart = new Entity({
   },
   indexes: {
     primary: {
+      collection: 'charts',
+      type: 'clustered',
       pk: {
         field: 'pk',
         composite: ['userId'],
       },
       sk: {
         field: 'sk',
-        composite: ['id'],
+        composite: ['chartId'],
       },
     },
     byStatus: {
