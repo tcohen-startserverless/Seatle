@@ -2,21 +2,27 @@ import { useCallback } from 'react';
 import { StyleSheet, FlatList, Pressable, View, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
-import { PeopleItem } from '@core/People';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useTheme } from '@/theme';
 import { FAB } from '@/components/ui/FAB';
 
+interface PersonItem {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
+
 export interface PeopleListProps {
-  people: any[];
+  people: PersonItem[];
   width?: number;
 }
 
 export function PeopleList({ people, width: propWidth }: PeopleListProps) {
   const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
+  const { theme } = useTheme();
   const listWidth = propWidth ?? Math.min(800, screenWidth - 32);
-  const backgroundColor = useThemeColor({}, 'primaryRow');
-  const alternateBackground = useThemeColor({}, 'alternateRow');
+  const backgroundColor = theme.colors.primaryRow;
+  const alternateBackground = theme.colors.alternateRow;
 
   const handlePersonPress = useCallback(
     (personId: string) => {
@@ -26,7 +32,7 @@ export function PeopleList({ people, width: propWidth }: PeopleListProps) {
   );
 
   const renderItem = useCallback(
-    ({ item, index }: { item: PeopleItem; index: number }) => (
+    ({ item, index }: { item: PersonItem; index: number }) => (
       <View style={styles.itemWrapper}>
         <Pressable
           style={[
@@ -52,7 +58,7 @@ export function PeopleList({ people, width: propWidth }: PeopleListProps) {
     () => (
       <View style={styles.itemWrapper}>
         <View style={styles.header}>
-          <ThemedText type="title">Peoples</ThemedText>
+          <ThemedText type="title">People</ThemedText>
         </View>
       </View>
     ),
@@ -63,7 +69,7 @@ export function PeopleList({ people, width: propWidth }: PeopleListProps) {
     <View style={styles.container}>
       <FlatList
         style={{ width: listWidth }}
-        data={Peoples}
+        data={people}
         renderItem={renderItem}
         ListHeaderComponent={ListHeader}
         keyExtractor={(item) => item.id}
@@ -71,7 +77,7 @@ export function PeopleList({ people, width: propWidth }: PeopleListProps) {
       />
       <View style={[styles.fabWrapper, { width: listWidth }]}>
         <View style={styles.fabContainer}>
-          <FAB onPress={() => router.push('/Peoples/create')} />
+          <FAB onPress={() => router.push('/People/create')} />
         </View>
       </View>
     </View>

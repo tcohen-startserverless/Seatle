@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { Pressable } from 'react-native';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeColor } from '@/theme';
 import { FloorPlanEditor } from '@/components/FloorPlanEditor';
 import { ArrowLeft, Square, Circle, Save, X } from 'lucide-react';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
@@ -12,6 +12,7 @@ import { TablePosition } from '@/components/FloorPlanEditor/types';
 import { useListLists } from '@/api/hooks/lists';
 import { useCreateChart } from '@/api/hooks/charts';
 import { useAuth } from '@/hooks/useAuth';
+import { useBulkCreateSeats } from '@/api/hooks/seats';
 
 type FurnitureType = 'TABLE' | 'CHAIR';
 
@@ -197,15 +198,17 @@ export default function CreateClassScreen() {
               styles.listItem,
               {
                 borderColor,
-                backgroundColor: selectedListId === list.id
-                  ? tintColor
-                  : 'transparent',
+                backgroundColor: selectedListId === list.id ? tintColor : 'transparent',
               },
             ]}
             onPress={() => selectList(list.id)}
           >
             <ThemedText
-              style={selectedListId === list.id ? { color: '#ffffff', fontWeight: 'bold' } : undefined}
+              style={
+                selectedListId === list.id
+                  ? { color: '#ffffff', fontWeight: 'bold' }
+                  : undefined
+              }
             >
               {list.name}
             </ThemedText>
@@ -233,23 +236,32 @@ export default function CreateClassScreen() {
     }
 
     try {
-      // Create the chart first
       const chart = await createChartMutation.mutateAsync({
         name: chartName,
         description: chartDescription,
-        userId: user.id,
         listId: selectedListId,
       });
 
-      // In a real implementation, we would create seats through an API
-      // For now, we'll just log the furniture items that would be created
-      console.log('Creating furniture for chart:', chart.id, furniture);
-      
-      // Simulate a delay for seat creation
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (furniture.length > 0) {
+        console.log('Creating seats:', furniture.length);
 
-      // Navigate to the chart detail
-      router.push(`/charts/${chart.id}`);
+        const seatsMutation = useBulkCreateSeats(chart.chartId);
+
+        const seatData = furniture.map((item) => ({
+          chartId: chart.chartId,
+          id: item.id,
+          type: item.type,
+          x: item.x,
+          y: item.y,
+          width: item.type === 'TABLE' ? item.size : item.size,
+          height: item.type === 'TABLE' ? item.size : item.size,
+          personId: item.personId,
+        }));
+
+        console.log('Would create seats:', seatData.length);
+      }
+
+      router.push(`/charts/${chart.chartId}`);
     } catch (error) {
       console.error('Error creating chart:', error);
       Alert.alert('Error', 'Failed to create chart');
@@ -348,7 +360,9 @@ export default function CreateClassScreen() {
                 onLongPress={() => {
                   // Implement actual chair dragging functionality
                   const updatedFurniture = [...furniture];
-                  const chairIndex = updatedFurniture.findIndex(item => item.id === chair.id);
+                  const chairIndex = updatedFurniture.findIndex(
+                    (item) => item.id === chair.id
+                  );
 
                   if (chairIndex !== -1) {
                     // Move the chair to a new position to demonstrate movement
@@ -363,7 +377,7 @@ export default function CreateClassScreen() {
                       y: newY,
                       size: chair.size,
                       type: 'CHAIR' as FurnitureType,
-                      cells: chair.cells || 1
+                      cells: chair.cells || 1,
                     };
 
                     setFurniture(updatedFurniture);

@@ -1,6 +1,6 @@
-import { Text, type TextProps, StyleSheet } from 'react-native';
+import { Text, type TextProps, StyleSheet, TextStyle } from 'react-native';
 
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useTheme, useTypography } from '@/theme';
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
@@ -15,17 +15,41 @@ export function ThemedText({
   type = 'default',
   ...rest
 }: ThemedTextProps) {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const { theme } = useTheme();
+  const typography = useTypography();
+  const color = theme.colors.text;
+
+  const textStyles: Record<string, TextStyle> = {
+    default: {
+      fontSize: typography.fontSize.md,
+      lineHeight: typography.lineHeight.md,
+    },
+    defaultSemiBold: {
+      fontSize: typography.fontSize.md,
+      lineHeight: typography.lineHeight.md,
+      fontWeight: '600',
+    },
+    title: {
+      fontSize: typography.fontSize['3xl'],
+      fontWeight: 'bold',
+      lineHeight: typography.lineHeight['3xl'],
+    },
+    subtitle: {
+      fontSize: typography.fontSize.xl,
+      fontWeight: 'bold',
+    },
+    link: {
+      lineHeight: 30,
+      fontSize: typography.fontSize.md,
+      color: theme.colors.info,
+    },
+  };
 
   return (
     <Text
       style={[
         { color },
-        type === 'default' ? styles.default : undefined,
-        type === 'title' ? styles.title : undefined,
-        type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
-        type === 'subtitle' ? styles.subtitle : undefined,
-        type === 'link' ? styles.link : undefined,
+        textStyles[type],
         style,
       ]}
       {...rest}
@@ -33,28 +57,4 @@ export function ThemedText({
   );
 }
 
-const styles = StyleSheet.create({
-  default: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  defaultSemiBold: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '600',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    lineHeight: 32,
-  },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  link: {
-    lineHeight: 30,
-    fontSize: 16,
-    color: '#0a7ea4',
-  },
-});
+const styles = StyleSheet.create({});

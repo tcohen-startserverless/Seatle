@@ -5,31 +5,44 @@ import { useState } from 'react';
 import { useAuthContext } from '@/context/AuthContext';
 import { ProfileMenu } from '@/components/ProfileMenu';
 import { User } from 'lucide-react';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeColor, useSpacing, useTypography } from '@/theme';
 
 export default function HomeScreen() {
   const { user } = useAuthContext();
   const [showMenu, setShowMenu] = useState(false);
+  const spacing = useSpacing();
+  const typography = useTypography();
   const iconColor = useThemeColor({}, 'text');
 
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.header}>
+    <ThemedView style={[styles.container, { padding: spacing.md }]}>
+      <View style={[styles.header, { marginBottom: spacing.lg }]}>
         <ThemedText type="title">Home</ThemedText>
 
-        <Pressable style={styles.profileButton} onPress={() => setShowMenu(!showMenu)}>
+        <Pressable
+          style={[styles.profileButton, { padding: spacing.sm }]}
+          onPress={() => setShowMenu(!showMenu)}
+        >
           <User size={24} color={iconColor} />
         </Pressable>
       </View>
 
       {showMenu && (
-        <View style={styles.menuContainer}>
+        <View style={[styles.menuContainer, { top: spacing['3xl'], right: spacing.md }]}>
           <ProfileMenu />
         </View>
       )}
 
-      <View style={styles.content}>
-        <ThemedText style={styles.welcomeText}>
+      <View style={[styles.content, { paddingTop: spacing.md }]}>
+        <ThemedText
+          style={[
+            styles.welcomeText,
+            {
+              fontSize: typography.fontSize.lg,
+              marginBottom: spacing.lg,
+            },
+          ]}
+        >
           Welcome, {user?.email?.split('@')[0] || 'User'}!
         </ThemedText>
       </View>
@@ -40,29 +53,19 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
   },
-  profileButton: {
-    padding: 8,
-  },
+  profileButton: {},
   menuContainer: {
     position: 'absolute',
-    top: 60,
-    right: 16,
     zIndex: 1000,
   },
   content: {
     flex: 1,
-    paddingTop: 16,
   },
-  welcomeText: {
-    fontSize: 18,
-    marginBottom: 24,
-  },
+  welcomeText: {},
 });

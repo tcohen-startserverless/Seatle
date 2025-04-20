@@ -5,7 +5,7 @@ import {
   TextInputProps,
   Platform,
 } from 'react-native';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useTheme, useRadius, useSpacing, useTypography } from '@/theme';
 
 type ThemeProps = {
   lightColor?: string;
@@ -19,13 +19,15 @@ export type ThemedTextInputProps = TextInputProps &
 
 export const TextInput = forwardRef<RNTextInput, ThemedTextInputProps>(
   ({ style, lightColor, darkColor, ...props }, ref) => {
-    const backgroundColor = useThemeColor(
-      { light: lightColor, dark: darkColor },
-      'inputBackground'
-    );
-    const color = useThemeColor({}, 'inputText');
-    const borderColor = useThemeColor({}, 'border');
-    const placeholderColor = useThemeColor({}, 'placeholderText');
+    const { theme } = useTheme();
+    const radius = useRadius();
+    const spacing = useSpacing();
+    const typography = useTypography();
+    
+    const backgroundColor = theme.colors.inputBackground;
+    const color = theme.colors.inputText;
+    const borderColor = theme.colors.border;
+    const placeholderColor = theme.colors.placeholderText;
 
     return (
       <RNTextInput
@@ -37,6 +39,10 @@ export const TextInput = forwardRef<RNTextInput, ThemedTextInputProps>(
             backgroundColor,
             color,
             borderColor,
+            borderRadius: radius.md,
+            padding: spacing.md,
+            fontSize: typography.fontSize.md,
+            minHeight: 46,
           },
           Platform.OS === 'web' && styles.webInput,
           style,
@@ -50,10 +56,6 @@ export const TextInput = forwardRef<RNTextInput, ThemedTextInputProps>(
 const styles = StyleSheet.create({
   input: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    minHeight: 46,
   },
   webInput: {
     // @ts-ignore - Web-only styles

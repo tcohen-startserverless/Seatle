@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useTheme, useRadius } from '@/theme';
 
 interface CardProps {
   children: React.ReactNode;
@@ -8,13 +8,19 @@ interface CardProps {
 }
 
 export function Card({ children, style, onPress }: CardProps) {
-  const backgroundColor = useThemeColor({}, 'card');
-  const borderColor = useThemeColor({}, 'border');
+  const { theme } = useTheme();
+  const radius = useRadius();
+  const backgroundColor = theme.colors.card;
+  const borderColor = theme.colors.border;
   
   const cardContent = (
     <View style={[
       styles.container, 
-      { backgroundColor, borderColor }, 
+      { 
+        backgroundColor, 
+        borderColor,
+        borderRadius: radius.lg
+      }, 
       style
     ]}>
       {children}
@@ -34,7 +40,6 @@ export function Card({ children, style, onPress }: CardProps) {
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
     borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: {

@@ -1,5 +1,5 @@
 import { StyleSheet, Pressable } from 'react-native';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useTheme, useSpacing, useRadius } from '@/theme';
 import { Plus } from 'lucide-react';
 
 interface FABProps {
@@ -7,11 +7,26 @@ interface FABProps {
 }
 
 export function FAB({ onPress }: FABProps) {
-  const backgroundColor = useThemeColor({}, 'tint');
-  const iconColor = useThemeColor({}, 'background');
+  const { theme } = useTheme();
+  const spacing = useSpacing();
+  const radius = useRadius();
+  
+  const backgroundColor = theme.colors.tint;
+  const iconColor = theme.colors.background;
 
   return (
-    <Pressable style={[styles.fab, { backgroundColor }]} onPress={onPress}>
+    <Pressable 
+      style={[
+        styles.fab, 
+        { 
+          backgroundColor,
+          bottom: spacing.md,
+          right: spacing.md,
+          borderRadius: radius.full,
+        }
+      ]} 
+      onPress={onPress}
+    >
       <Plus size={24} color={iconColor} />
     </Pressable>
   );
@@ -20,11 +35,8 @@ export function FAB({ onPress }: FABProps) {
 const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
-    bottom: 16,
-    right: 16,
     width: 56,
     height: 56,
-    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,

@@ -3,7 +3,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useAuthContext } from '@/context/AuthContext';
 import { useRouter } from 'expo-router';
 import { ThemedView } from './ThemedView';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useTheme } from '@/theme';
 
 type AuthGuardProps = {
   children: ReactNode;
@@ -13,7 +13,7 @@ type AuthGuardProps = {
 export function AuthGuard({ children, fallbackRoute = '/auth/login' }: AuthGuardProps) {
   const { isAuthenticated, isLoading } = useAuthContext();
   const router = useRouter();
-  const tintColor = useThemeColor({}, 'tint');
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -24,7 +24,7 @@ export function AuthGuard({ children, fallbackRoute = '/auth/login' }: AuthGuard
   if (isLoading) {
     return (
       <ThemedView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={tintColor} />
+        <ActivityIndicator size="large" color={theme.colors.tint} />
       </ThemedView>
     );
   }

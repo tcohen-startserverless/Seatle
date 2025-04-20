@@ -3,14 +3,19 @@ import { StyleSheet, View, Pressable } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { useAuthContext } from '@/context/AuthContext';
 import { LogOut, Settings, User } from 'lucide-react';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useTheme, useRadius, useSpacing, useTypography } from '@/theme';
 import { useRouter } from 'expo-router';
 
 export function ProfileMenu() {
   const { user, logout } = useAuthContext();
   const router = useRouter();
-  const iconColor = useThemeColor({}, 'text');
-  const borderColor = useThemeColor({}, 'border');
+  const { theme } = useTheme();
+  const radius = useRadius();
+  const spacing = useSpacing();
+  const typography = useTypography();
+  
+  const iconColor = theme.colors.text;
+  const borderColor = theme.colors.border;
 
   if (!user) {
     return null;
@@ -22,33 +27,56 @@ export function ProfileMenu() {
   };
 
   return (
-    <View style={[styles.container, { borderColor }]}>
-      <View style={styles.header}>
-        <View style={styles.avatar}>
+    <View style={[
+      styles.container, 
+      { 
+        borderColor,
+        borderRadius: radius.md,
+        padding: spacing.md,
+        width: 280,
+      }
+    ]}>
+      <View style={[styles.header, { marginBottom: spacing.md }]}>
+        <View style={[
+          styles.avatar, 
+          { 
+            marginRight: spacing.md,
+            borderRadius: radius.full / 2, // Half of full for circle
+          }
+        ]}>
           <User size={24} color={iconColor} />
         </View>
         <View style={styles.userInfo}>
           <ThemedText style={styles.email}>{user.email}</ThemedText>
-          <ThemedText style={styles.role}>{user.role || 'User'}</ThemedText>
+          <ThemedText style={[
+            styles.role, 
+            { fontSize: typography.fontSize.xs }
+          ]}>{user.role || 'User'}</ThemedText>
         </View>
       </View>
       
-      <View style={[styles.divider, { backgroundColor: borderColor }]} />
+      <View style={[
+        styles.divider, 
+        { 
+          backgroundColor: borderColor,
+          marginVertical: spacing.md,
+        }
+      ]} />
       
       <Pressable 
-        style={styles.menuItem} 
+        style={[styles.menuItem, { paddingVertical: spacing.md }]} 
         onPress={() => {}}
       >
         <Settings size={20} color={iconColor} />
-        <ThemedText style={styles.menuItemText}>Settings</ThemedText>
+        <ThemedText style={[styles.menuItemText, { marginLeft: spacing.md }]}>Settings</ThemedText>
       </Pressable>
       
       <Pressable 
-        style={styles.menuItem} 
+        style={[styles.menuItem, { paddingVertical: spacing.md }]}
         onPress={handleLogout}
       >
         <LogOut size={20} color={iconColor} />
-        <ThemedText style={styles.menuItemText}>Logout</ThemedText>
+        <ThemedText style={[styles.menuItemText, { marginLeft: spacing.md }]}>Logout</ThemedText>
       </Pressable>
     </View>
   );
@@ -57,23 +85,17 @@ export function ProfileMenu() {
 const styles = StyleSheet.create({
   container: {
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 16,
-    width: 280,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
   },
   avatar: {
     width: 40,
     height: 40,
-    borderRadius: 20,
     backgroundColor: 'rgba(0,0,0,0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
   },
   userInfo: {
     flex: 1,
@@ -83,20 +105,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   role: {
-    fontSize: 12,
     opacity: 0.7,
   },
   divider: {
     height: 1,
     width: '100%',
-    marginVertical: 12,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
   },
   menuItemText: {
-    marginLeft: 12,
   },
 });

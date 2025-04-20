@@ -1,6 +1,7 @@
 import { DB } from '@core/dynamo';
 import { ChartSchemas } from './schema';
 import { Schemas } from '@core/schema';
+import { transformChartResponse } from '@core/charts/helpers';
 
 export namespace ChartService {
   export const create = async (
@@ -21,7 +22,7 @@ export namespace ChartService {
         chartId: input.id,
       })
       .go();
-    return res;
+    return transformChartResponse(res);
   };
 
   export const list = async (

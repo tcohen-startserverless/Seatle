@@ -1,11 +1,18 @@
-import { StyleSheet, useWindowDimensions, View, FlatList, Pressable, Platform } from 'react-native';
+import {
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  FlatList,
+  Pressable,
+  Platform,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { FAB } from '@/components/ui/FAB';
 import { useListLists } from '@/api/hooks/lists';
 import { ListChecks } from 'lucide-react';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeColor, useSpacing, useRadius } from '@/theme';
 import { useState, useEffect } from 'react';
 
 function ListsSkeleton({ contentWidth }: { contentWidth: number }) {
@@ -61,11 +68,16 @@ function ListsSkeleton({ contentWidth }: { contentWidth: number }) {
 const isWeb = Platform.OS === 'web';
 
 // Grid card component for web layout
-function ListCard({ item, onPress, iconColor, cardBackground }: { 
-  item: any, 
-  onPress: () => void, 
-  iconColor: string, 
-  cardBackground: string 
+function ListCard({
+  item,
+  onPress,
+  iconColor,
+  cardBackground,
+}: {
+  item: any;
+  onPress: () => void;
+  iconColor: string;
+  cardBackground: string;
 }) {
   return (
     <Pressable
@@ -86,7 +98,8 @@ function ListCard({ item, onPress, iconColor, cardBackground }: {
 export default function ListsScreen() {
   const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
-  const contentWidth = Math.min(1200, screenWidth - 32); // Increased max width for web
+  const spacing = useSpacing();
+  const contentWidth = Math.min(1200, screenWidth - spacing.xl);
   const iconColor = useThemeColor({}, 'text');
   const cardBackground = useThemeColor({}, 'card');
   const [isFirstLoad, setIsFirstLoad] = useState(true);
@@ -123,10 +136,10 @@ export default function ListsScreen() {
 
   // Calculate number of columns based on screen width for web
   const numColumns = isWeb ? Math.max(1, Math.floor(contentWidth / 300)) : 1;
-  
+
   const renderList = () => {
     const lists = data?.data || [];
-    
+
     if (lists.length === 0) {
       return (
         <View style={styles.emptyState}>
@@ -137,18 +150,21 @@ export default function ListsScreen() {
         </View>
       );
     }
-    
+
     if (isWeb && numColumns > 1) {
       // Grid layout for web
       return (
         <View style={styles.gridContainer}>
           {lists.map((item: any) => (
-            <View key={item.id} style={[styles.gridItem, { width: `${100 / numColumns}%` }]}>
-              <ListCard 
-                item={item} 
-                onPress={() => router.push(`/lists/${item.id}`)} 
-                iconColor={iconColor} 
-                cardBackground={cardBackground} 
+            <View
+              key={item.id}
+              style={[styles.gridItem, { width: `${100 / numColumns}%` }]}
+            >
+              <ListCard
+                item={item}
+                onPress={() => router.push(`/lists/${item.id}`)}
+                iconColor={iconColor}
+                cardBackground={cardBackground}
               />
             </View>
           ))}
@@ -161,11 +177,11 @@ export default function ListsScreen() {
           data={lists}
           keyExtractor={(item: any) => item.id}
           renderItem={({ item }: { item: any }) => (
-            <ListCard 
-              item={item} 
-              onPress={() => router.push(`/lists/${item.id}`)} 
-              iconColor={iconColor} 
-              cardBackground={cardBackground} 
+            <ListCard
+              item={item}
+              onPress={() => router.push(`/lists/${item.id}`)}
+              iconColor={iconColor}
+              cardBackground={cardBackground}
             />
           )}
           contentContainerStyle={styles.listContent}
@@ -173,7 +189,7 @@ export default function ListsScreen() {
       );
     }
   };
-  
+
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.content, { width: contentWidth }]}>

@@ -1,13 +1,10 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform, View, StyleSheet } from 'react-native';
-
 import { HapticTab } from '@/components/HapticTab';
-
-import { Home, Users, GraduationCap, ListChecks } from 'lucide-react';
+import { Home, GraduationCap, ListChecks } from 'lucide-react';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useThemeColor } from '@/theme';
 import { AuthGuard } from '@/components/AuthGuard';
 import VerticalNavbar from '@/components/VerticalNavbar';
 
@@ -25,7 +22,8 @@ const styles = StyleSheet.create({
 });
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const tintColor = useThemeColor({}, 'tint');
+  const backgroundColor = useThemeColor({}, 'background');
 
   if (isWeb) {
     return (
@@ -53,7 +51,7 @@ export default function TabLayout() {
     <AuthGuard>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+          tabBarActiveTintColor: tintColor,
           headerShown: false,
           tabBarButton: HapticTab,
           tabBarBackground: TabBarBackground,
@@ -62,7 +60,7 @@ export default function TabLayout() {
               position: 'absolute',
             },
             default: {
-              backgroundColor: Colors[colorScheme ?? 'light'].background,
+              backgroundColor: backgroundColor,
             },
           }),
         }}

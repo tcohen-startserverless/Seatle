@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { Pressable } from 'react-native';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeColor } from '@/theme';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/Button';
 import { useCreateList } from '@/api/hooks/lists';

@@ -2,7 +2,7 @@ import { StyleSheet, View, useWindowDimensions, Pressable, Alert, ScrollView, Ac
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeColor } from '@/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { useListLists } from '@/api/hooks/lists';
 import { useCreateChart, useListCharts } from '@/api/hooks/charts';
@@ -35,7 +35,7 @@ const ChartsList = () => {
     );
   }
 
-  if (!chartsData?.data || chartsData.data.length === 0) {
+  if (!chartsData?.data || !chartsData.data?.length) {
     return <ThemedText>No charts created yet</ThemedText>;
   }
 
@@ -43,9 +43,9 @@ const ChartsList = () => {
     <View style={styles.chartsContainer}>
       {chartsData.data.map((chart) => (
         <Pressable
-          key={chart.id}
+          key={chart.chartId}
           style={[styles.chartItem, { borderColor }]}
-          onPress={() => router.push(`/charts/${chart.id}`)}
+          onPress={() => router.push(`/charts/${chart.chartId}`)}
         >
           <View style={styles.chartItemContent}>
             <ThemedText style={styles.chartName}>{chart.name}</ThemedText>
@@ -208,18 +208,16 @@ export default function ChartsScreen() {
       }
       
       try {
-        // Create the chart
         const chart = await createChartMutation.mutateAsync({
           name: value.name.trim(),
           description: value.description?.trim() || undefined,
-          userId: user.id,
           listId: selectedListId,
         });
         
         form.reset();
         setSelectedListId('');
         
-        router.push(`/charts/${chart.id}`);
+        router.push(`/charts/${chart.chartId}`);
       } catch (error) {
         console.error('Error creating chart:', error);
         Alert.alert('Error', 'Failed to create chart');

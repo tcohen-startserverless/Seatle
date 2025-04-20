@@ -11,7 +11,8 @@ export const useListChartSeats = (chartId: string) => {
     queryFn: async () => {
       if (!client) throw new Error('API client not initialized');
       const res = await client.chart[':chartId'].seats.$get({
-        param: { chartId },
+        param: { id: chartId },
+        query: {},
       });
       return res.json();
     },

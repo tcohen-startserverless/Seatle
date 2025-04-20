@@ -3,13 +3,17 @@ import { useApiClient } from '@/api';
 import { chartKeys } from './keys';
 import { Schemas } from '@core/schema';
 import { ChartSchemas } from '@core/charts/chart';
-import { ChartsResponse, ChartQueryResponse } from '@core/charts';
+import {
+  ChartsResponse,
+  ChartQueryResponse,
+  TransformedChartResponse,
+} from '@core/charts';
 
 export const useGetChart = (params: Schemas.Types.Params) => {
   const { client, isLoading: clientLoading } = useApiClient();
   const queryClient = useQueryClient();
 
-  return useQuery<ChartsResponse | null, Error>({
+  return useQuery<TransformedChartResponse | null, Error>({
     queryKey: chartKeys.detail(params.id),
     queryFn: async () => {
       if (!client) throw new Error('API client not initialized');
@@ -23,17 +27,13 @@ export const useGetChart = (params: Schemas.Types.Params) => {
       const cachedChart = chartsData?.data?.Chart?.find(
         (item) => item.chartId === params.id
       );
-      if (cachedChart) {
-        return {
-          data: {
-            Chart: [cachedChart],
-            Seat: [],
-            Seating: [],
-          },
-          cursor: null,
-        };
-      }
-      return null;
+      if (!cachedChart) return null;
+      return {
+        ...cachedChart,
+        id: cachedChart.chartId,
+        seats: [],
+        seating: [],
+      };
     },
     staleTime: 30 * 1000,
     refetchOnMount: true,

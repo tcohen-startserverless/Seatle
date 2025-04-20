@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, ViewStyle, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useTheme, useRadius, useSpacing } from '@/theme';
 
 interface ButtonProps {
   onPress: () => void;
@@ -21,9 +21,12 @@ export function Button({
   variant = 'primary',
   style,
 }: ButtonProps) {
-  const tintColor = useThemeColor({}, 'tint');
-  const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
+  const { theme } = useTheme();
+  const radius = useRadius();
+  const spacing = useSpacing();
+  const tintColor = theme.colors.tint;
+  const backgroundColor = theme.colors.background;
+  const textColor = theme.colors.text;
 
   let buttonStyle = {};
   let textStyle = {};
@@ -51,6 +54,11 @@ export function Button({
     <Pressable
       style={[
         styles.button,
+        {
+          padding: spacing.md,
+          borderRadius: radius.md,
+          gap: spacing.sm,
+        },
         buttonStyle,
         (disabled || isLoading) && styles.disabled,
         style,
@@ -76,11 +84,8 @@ export function Button({
 const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
-    padding: 12,
-    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
   },
   text: {
     fontSize: 16,
