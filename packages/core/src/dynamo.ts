@@ -5,8 +5,8 @@ import { Service } from 'electrodb';
 import { Chart } from '@core/charts/chart';
 import { List } from '@core/list';
 import { Person } from '@core/person';
-import { Seat } from '@core/charts/seat';
-import { Seating } from '@core/charts/seating';
+import { Furniture } from './charts';
+import { Assignment } from './charts';
 import { User } from '@core/user';
 
 const table = Resource.Table.name;
@@ -22,9 +22,9 @@ export const DB = new Service(
     Chart,
     List,
     Person,
-    Seat,
-    Seating,
     User,
+    Assignment,
+    Furniture,
   },
   {
     table,

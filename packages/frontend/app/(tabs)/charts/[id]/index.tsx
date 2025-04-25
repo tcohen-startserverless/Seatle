@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Pressable, Alert, ActivityIndicator } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Pressable,
+  Alert,
+  ActivityIndicator,
+  Modal,
+  ScrollView,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/theme';
-import { ArrowLeft, Square, Circle, Save } from 'lucide-react';
+import { ArrowLeft, Square, Circle, Save, X, User } from 'lucide-react';
 import { FloorPlanEditor } from '@/components/FloorPlanEditor';
-import { useGetChart } from '@/api/hooks/charts';
-import {
-  useListChartSeats,
-  useCreateSeat,
-  useUpdateSeat,
-  useDeleteSeat,
-  useBulkCreateSeats,
-} from '@/api/hooks/seats';
+import { useGetChart, useUpdateChartLayout } from '@/api/hooks/charts';
+import { useListChartFurniture } from '@/api/hooks/furniture';
+import { useListChartAssignments } from '@/api/hooks/assignments';
+import { useGetList } from '@/api/hooks/lists';
 
 type FurnitureType = 'TABLE' | 'CHAIR';
 
@@ -41,19 +45,37 @@ export default function ChartDetailScreen() {
   } = useGetChart({ id: id || '' });
 
   const {
-    data: seatsData,
-    isLoading: seatsLoading,
-    error: seatsError,
-  } = useListChartSeats(id || '');
+    data: furnitureData,
+    isLoading: furnitureLoading,
+    error: furnitureError,
+  } = useListChartFurniture(id || '');
 
-  const createSeatMutation = useCreateSeat(id || '');
-  const updateSeatMutation = useUpdateSeat();
-  const deleteSeatMutation = useDeleteSeat();
+  const {
+    data: assignmentsData,
+    isLoading: assignmentsLoading,
+    error: assignmentsError,
+  } = useListChartAssignments(id || '', '');
+
+  const updateLayoutMutation = useUpdateChartLayout();
+
+  const [personAssignmentVisible, setPersonAssignmentVisible] = useState(false);
+  const [selectedChairId, setSelectedChairId] = useState<string | null>(null);
+  const backgroundColor = useThemeColor({}, 'background');
+  const borderColor = useThemeColor({}, 'border');
+
+  const {
+    data: listData,
+    isLoading: listLoading,
+    error: listError,
+  } = useGetList({
+    id: chartData?.listId || '',
+  });
 
   const [furniture, setFurniture] = useState<FurniturePosition[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const isLoading = chartLoading || seatsLoading;
-  const error = chartError || seatsError;
+  const isLoading = chartLoading || furnitureLoading || assignmentsLoading || isSaving;
+  const error = chartError || furnitureError || assignmentsError;
 
   const TABLE_SIZES = [
     { id: '1x1', size: 25, label: '1x1', type: 'TABLE' as FurnitureType },
@@ -68,36 +90,32 @@ export default function ChartDetailScreen() {
   ];
 
   useEffect(() => {
-    if (!seatsData?.data) {
+    if (!furnitureData?.data || !assignmentsData?.data) {
       return;
     }
 
-    // Convert seat data from backend to furniture format
     const furnitureItems: FurniturePosition[] = [];
 
-    // Add tables and chairs from the seats data
-    seatsData.data.forEach((seat) => {
-      // Determine furniture type
-      const type = seat.type === 'TABLE' ? 'TABLE' : 'CHAIR';
-
-      // Calculate cells for tables based on dimensions
+    furnitureData.data.forEach((item) => {
+      const type = item.type === 'TABLE' ? 'TABLE' : 'CHAIR';
       const cells =
-        type === 'TABLE' ? Math.floor((seat.width * seat.height) / (25 * 25)) : 1;
+        type === 'TABLE' ? Math.floor((item.width * item.height) / (25 * 25)) : 1;
+
+      const assignment = assignmentsData.data.find((a) => a.furnitureId === item.id);
 
       furnitureItems.push({
-        id: seat.id,
-        x: seat.x,
-        y: seat.y,
-        size: type === 'TABLE' ? seat.width : seat.height,
+        id: item.id,
+        x: item.x,
+        y: item.y,
+        size: type === 'TABLE' ? item.width : item.height,
         type,
         cells,
-        personId: seat.personId,
-        // We'd need to fetch person name from a person API if needed
+        personId: assignment?.personId,
       });
     });
 
     setFurniture(furnitureItems);
-  }, [seatsData]);
+  }, [furnitureData, assignmentsData]);
 
   const handleAddFurniture = (size: number, type: FurnitureType) => {
     const newItem: FurniturePosition = {
@@ -245,29 +263,36 @@ export default function ChartDetailScreen() {
   const handleChairClick = (chairId: string) => {
     const chair = furniture.find((item) => item.id === chairId && item.type === 'CHAIR');
     if (!chair) return;
-    Alert.alert(
-      'Assign Person',
-      chair.personId
-        ? `This seat is assigned to ${chair.personName || 'a person'}`
-        : `You would assign a person to chair ${chairId} here.`,
-      chair.personId
-        ? [
-            { text: 'OK' },
-            {
-              text: 'Remove Assignment',
-              onPress: () => {
-                setFurniture((prev) =>
-                  prev.map((item) =>
-                    item.id === chairId
-                      ? { ...item, personId: undefined, personName: undefined }
-                      : item
-                  )
-                );
-              },
-            },
-          ]
-        : [{ text: 'OK' }]
+
+    const assignment = assignmentsData?.data.find((a) => a.furnitureId === chairId);
+
+    // Set the selected chair and show the people assignment modal
+    setSelectedChairId(chairId);
+    setPersonAssignmentVisible(true);
+  };
+
+  const assignPersonToChair = (personId: string, personName: string) => {
+    if (!selectedChairId) return;
+
+    setFurniture((prev) =>
+      prev.map((item) =>
+        item.id === selectedChairId ? { ...item, personId, personName } : item
+      )
     );
+    setPersonAssignmentVisible(false);
+  };
+
+  const removePersonFromChair = () => {
+    if (!selectedChairId) return;
+
+    setFurniture((prev) =>
+      prev.map((item) =>
+        item.id === selectedChairId
+          ? { ...item, personId: undefined, personName: undefined }
+          : item
+      )
+    );
+    setPersonAssignmentVisible(false);
   };
 
   const handleSaveLayout = async () => {
@@ -276,74 +301,105 @@ export default function ChartDetailScreen() {
       return;
     }
 
+    setIsSaving(true);
     try {
-      // Prepare tables and chairs to be saved
-      const tables = furniture.filter((item) => item.type === 'TABLE');
-      const chairs = furniture.filter((item) => item.type === 'CHAIR');
-
-      // Get the current seat IDs to track what's been removed
-      const existingSeatIds = seatsData?.data?.map((seat) => seat.id) || [];
+      const existingFurnitureIds = furnitureData?.data?.map((item) => item.id) || [];
       const currentFurnitureIds = furniture.map((item) => item.id);
 
-      // Find seats that have been removed
-      const removedSeatIds = existingSeatIds.filter(
-        (seatId) => !currentFurnitureIds.includes(seatId)
+      const furnitureToDelete = existingFurnitureIds.filter(
+        (itemId) => !currentFurnitureIds.includes(itemId)
       );
 
-      // Create or update seats based on the current furniture
-      const createPromises = [];
-      const updatePromises = [];
+      const existingAssignments = assignmentsData?.data || [];
 
-      // Process all furniture items
-      for (const item of furniture) {
-        // Prepare data for the API
-        const seatData = {
+      const existingItems = furniture.filter((item) =>
+        existingFurnitureIds.includes(item.id)
+      );
+      const newItems = furniture.filter(
+        (item) => !existingFurnitureIds.includes(item.id)
+      );
+
+      const assignmentsToCreate: { furnitureId: string; personId: string }[] = [];
+      const assignmentsToDelete: string[] = [];
+
+      furniture.forEach((item) => {
+        if (item.personId) {
+          const existingAssignment = existingAssignments.find(
+            (a) => a.furnitureId === item.id
+          );
+
+          if (!existingAssignment) {
+            assignmentsToCreate.push({
+              furnitureId: item.id,
+              personId: item.personId,
+            });
+          } else if (existingAssignment.personId !== item.personId) {
+            assignmentsToDelete.push(existingAssignment.id);
+            assignmentsToCreate.push({
+              furnitureId: item.id,
+              personId: item.personId,
+            });
+          }
+        }
+      });
+
+      existingAssignments.forEach((assignment) => {
+        const furnItem = furniture.find((item) => item.id === assignment.furnitureId);
+        if (!furnItem || !furnItem.personId) {
+          assignmentsToDelete.push(assignment.id);
+        }
+      });
+
+      const layoutUpdateData = {
+        furnitureToCreate: newItems.map((item) => ({
+          id: item.id,
           x: item.x,
           y: item.y,
           width: item.type === 'TABLE' ? item.size : item.size,
           height: item.type === 'TABLE' ? item.size : item.size,
           type: item.type,
-          chartId: id,
-          personId: item.personId,
-        };
+        })),
 
-        // If the seat already exists, update it
-        if (existingSeatIds.includes(item.id)) {
-          updatePromises.push(
-            updateSeatMutation.mutateAsync({
-              chartId: id,
-              id: item.id,
-              data: seatData,
-            })
-          );
-        } else {
-          // Otherwise create a new seat
-          createPromises.push(
-            createSeatMutation.mutateAsync({
-              ...seatData,
-              id: item.id,
-            })
-          );
-        }
-      }
+        furnitureToUpdate: existingItems.map((item) => ({
+          id: item.id,
+          data: {
+            x: item.x,
+            y: item.y,
+            width: item.type === 'TABLE' ? item.size : item.size,
+            height: item.type === 'TABLE' ? item.size : item.size,
+            type: item.type,
+          },
+        })),
 
-      // Remove deleted seats
-      const deletePromises = removedSeatIds.map((seatId) =>
-        deleteSeatMutation.mutateAsync({
-          chartId: id,
-          id: seatId,
-        })
+        furnitureToDelete,
+        assignmentsToCreate,
+        assignmentsToDelete,
+      };
+
+      console.log(
+        `Saving layout changes: ${layoutUpdateData.furnitureToCreate.length} furniture to create, ${layoutUpdateData.furnitureToUpdate.length} to update, ${layoutUpdateData.furnitureToDelete.length} to delete, ${assignmentsToCreate.length} assignments to create, ${assignmentsToDelete.length} assignments to delete`
       );
 
-      // Execute all operations
-      await Promise.all([...createPromises, ...updatePromises, ...deletePromises]);
+      const result = await updateLayoutMutation.mutateAsync({
+        id,
+        data: layoutUpdateData,
+      });
 
-      Alert.alert('Save Layout', 'Layout saved successfully!', [
-        { text: 'OK', onPress: () => router.push('/charts') },
-      ]);
+      if (result.transaction.success) {
+        Alert.alert('Save Layout', 'Layout saved successfully!', [
+          { text: 'OK', onPress: () => router.push('/charts') },
+        ]);
+      } else {
+        throw new Error('Transaction failed');
+      }
     } catch (error) {
       console.error('Error saving layout:', error);
-      Alert.alert('Error', 'Failed to save layout');
+      Alert.alert(
+        'Error',
+        `Failed to save layout: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -361,12 +417,22 @@ export default function ChartDetailScreen() {
           {renderFurnitureOptions()}
 
           <Pressable
-            style={[styles.saveButton, { backgroundColor: tintColor }]}
+            style={[
+              styles.saveButton,
+              { backgroundColor: tintColor, opacity: isSaving ? 0.7 : 1 },
+            ]}
             onPress={handleSaveLayout}
+            disabled={isSaving}
           >
             <View style={styles.buttonContent}>
-              <Save size={18} color="white" />
-              <ThemedText style={styles.buttonText}>Save Layout</ThemedText>
+              {isSaving ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Save size={18} color="white" />
+              )}
+              <ThemedText style={styles.buttonText}>
+                {isSaving ? 'Saving...' : 'Save Layout'}
+              </ThemedText>
             </View>
           </Pressable>
         </View>
@@ -423,6 +489,98 @@ export default function ChartDetailScreen() {
             ))}
         </View>
       </View>
+
+      <Modal
+        visible={personAssignmentVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPersonAssignmentVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContainer, { backgroundColor }]}>
+            <View style={styles.modalHeader}>
+              <ThemedText type="subtitle">Assign Person to Seat</ThemedText>
+              <Pressable onPress={() => setPersonAssignmentVisible(false)}>
+                <X size={24} color={iconColor} />
+              </Pressable>
+            </View>
+
+            <ScrollView style={styles.modalContent}>
+              {!chartData?.listId ? (
+                <ThemedText>No list associated with this chart</ThemedText>
+              ) : listLoading ? (
+                <ActivityIndicator size="small" color={tintColor} />
+              ) : listError ? (
+                <ThemedText>Error loading people: {listError.message}</ThemedText>
+              ) : !listData?.people || listData.people.length === 0 ? (
+                <ThemedText>No people found in this list</ThemedText>
+              ) : (
+                <View>
+                  {selectedChairId && (
+                    <View style={styles.currentAssignment}>
+                      {(() => {
+                        const chair = furniture.find(
+                          (item) => item.id === selectedChairId
+                        );
+                        const assignment = assignmentsData?.data.find(
+                          (a) => a.furnitureId === selectedChairId
+                        );
+
+                        if (chair?.personId) {
+                          return (
+                            <>
+                              <ThemedText style={styles.assignmentText}>
+                                Current: {chair.personName || 'Unknown person'}
+                              </ThemedText>
+                              <Pressable
+                                style={[
+                                  styles.removeButton,
+                                  { backgroundColor: '#FF3B30' },
+                                ]}
+                                onPress={removePersonFromChair}
+                              >
+                                <ThemedText style={styles.removeButtonText}>
+                                  Remove
+                                </ThemedText>
+                              </Pressable>
+                            </>
+                          );
+                        }
+                        return (
+                          <ThemedText style={styles.assignmentText}>
+                            No person currently assigned
+                          </ThemedText>
+                        );
+                      })()}
+                    </View>
+                  )}
+
+                  <ThemedText style={styles.sectionTitle}>People</ThemedText>
+                  {listData.people.map((person) => (
+                    <Pressable
+                      key={person.id}
+                      style={[styles.personItem, { borderColor }]}
+                      onPress={() =>
+                        assignPersonToChair(
+                          person.id,
+                          `${person.firstName} ${person.lastName}`
+                        )
+                      }
+                    >
+                      <View style={styles.personRow}>
+                        <User size={18} color={iconColor} />
+                        <ThemedText style={styles.personName}>
+                          {person.firstName} {person.lastName}
+                        </ThemedText>
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </ThemedView>
   );
 }
@@ -516,5 +674,62 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: 'white',
     textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContainer: {
+    width: '80%',
+    maxWidth: 500,
+    maxHeight: '80%',
+    borderRadius: 12,
+    overflow: 'hidden',
+    padding: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalContent: {
+    flex: 1,
+  },
+  currentAssignment: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    marginBottom: 16,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 8,
+  },
+  assignmentText: {
+    fontWeight: '500',
+  },
+  removeButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  removeButtonText: {
+    color: 'white',
+    fontWeight: '500',
+    fontSize: 12,
+  },
+  personItem: {
+    padding: 12,
+    borderWidth: 1,
+    borderRadius: 8,
+    marginVertical: 4,
+  },
+  personRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
 });

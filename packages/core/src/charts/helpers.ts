@@ -10,7 +10,7 @@ export interface TransformedChartResponse {
   status: 'ACTIVE' | 'ARCHIVED';
   createdAt: number;
   updatedAt: number;
-  seats: {
+  furniture: {
     id: string;
     x: number;
     y: number;
@@ -20,14 +20,13 @@ export interface TransformedChartResponse {
     type: 'TABLE' | 'DESK' | 'CHAIR' | 'OTHER';
     label?: string;
     notes?: string;
-    personId?: string;
   }[];
-  seating: {
+  assignments: {
     id: string;
-    name: string;
-    rows: number;
-    columns: number;
-    status: 'ACTIVE' | 'ARCHIVED';
+    furnitureId: string;
+    personId: string;
+    createdAt: number;
+    updatedAt: number;
   }[];
 }
 
@@ -36,10 +35,9 @@ export function transformChartResponse(response: ChartsResponse) {
   if (!chartItems || chartItems.length === 0) return null;
   const chart = chartItems[0];
   if (!chart) return null;
-  const seats = response.data.Seat || [];
-  const seatingConfigs = response.data.Seating || [];
+  const furniture = response.data.Furniture || [];
+  const assignments = response.data.Assignment || [];
   return {
-    ...response,
     id: chart.chartId,
     name: chart.name,
     description: chart.description,
@@ -49,24 +47,23 @@ export function transformChartResponse(response: ChartsResponse) {
     status: chart.status,
     createdAt: chart.createdAt,
     updatedAt: chart.updatedAt,
-    seats: seats.map((seat) => ({
-      id: seat.id,
-      x: seat.x,
-      y: seat.y,
-      width: seat.width,
-      height: seat.height,
-      rotation: seat.rotation,
-      type: seat.type,
-      label: seat.label,
-      notes: seat.notes,
-      personId: seat.personId,
+    furniture: furniture.map((item) => ({
+      id: item.id,
+      x: item.x,
+      y: item.y,
+      width: item.width,
+      height: item.height,
+      rotation: item.rotation,
+      type: item.type,
+      label: item.label,
+      notes: item.notes,
     })),
-    seating: seatingConfigs.map((config) => ({
-      id: config.id,
-      name: config.name,
-      rows: config.rows,
-      columns: config.columns,
-      status: config.status,
+    assignments: assignments.map((item) => ({
+      id: item.id,
+      furnitureId: item.furnitureId,
+      personId: item.personId,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
     })),
   };
 }

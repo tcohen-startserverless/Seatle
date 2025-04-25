@@ -31,8 +31,8 @@ export const useGetChart = (params: Schemas.Types.Params) => {
       return {
         ...cachedChart,
         id: cachedChart.chartId,
-        seats: [],
-        seating: [],
+        furniture: [],
+        assignments: [],
       };
     },
     staleTime: 30 * 1000,

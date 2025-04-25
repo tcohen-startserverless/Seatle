@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import { PersonSchema, PersonService } from '@seater/core/person';
 import { Schemas } from '@core/schema';
 import { Enviroment } from '@functions/auth/middleware';
+import { AssignmentService } from '@core/charts/assignment';
 
 const app = new Hono<Enviroment>();
 
@@ -43,4 +44,16 @@ export default app
     const id = c.req.param('id');
     const result = await PersonService.remove(ctx, { id });
     return c.json(result);
-  });
+  })
+  .get(
+    '/:id/assignments',
+    vValidator('query', Schemas.Pagination),
+    vValidator('param', Schemas.Params),
+    async (c) => {
+      const ctx = c.get('ctx');
+      const params = c.req.valid('param');
+      const pagination = c.req.valid('query');
+      const assignments = await AssignmentService.listByPerson(ctx, params, pagination);
+      return c.json(assignments);
+    }
+  );

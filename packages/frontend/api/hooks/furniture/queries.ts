@@ -1,16 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { useApiClient } from '@/api';
-import { seatKeys } from './keys';
-import { SeatItem } from '@core/charts/seat';
+import { furnitureKeys } from './keys';
+import { FurnitureItem } from '@core/charts/furniture';
 
-export const useListChartSeats = (chartId: string) => {
+export const useListChartFurniture = (chartId: string) => {
   const { client, isLoading: clientLoading } = useApiClient();
 
-  return useQuery<{ data: SeatItem[] }, Error>({
-    queryKey: seatKeys.lists(chartId),
+  return useQuery<{ data: FurnitureItem[] }, Error>({
+    queryKey: furnitureKeys.lists(chartId),
     queryFn: async () => {
       if (!client) throw new Error('API client not initialized');
-      const res = await client.chart[':chartId'].seats.$get({
+      const res = await client.chart[':id'].furniture.$get({
         param: { id: chartId },
         query: {},
       });
@@ -20,15 +20,15 @@ export const useListChartSeats = (chartId: string) => {
   });
 };
 
-export const useGetSeat = (chartId: string, id: string) => {
+export const useGetFurniture = (chartId: string, id: string) => {
   const { client, isLoading: clientLoading } = useApiClient();
 
-  return useQuery<SeatItem | null, Error>({
-    queryKey: seatKeys.details(chartId, id),
+  return useQuery<FurnitureItem | null, Error>({
+    queryKey: furnitureKeys.details(chartId, id),
     queryFn: async () => {
       if (!client) throw new Error('API client not initialized');
-      const res = await client.chart[':chartId'].seats[':id'].$get({
-        param: { chartId, id },
+      const res = await client.chart[':id'].furniture[':furnitureId'].$get({
+        param: { id: chartId, furnitureId: id },
       });
       return res.json();
     },

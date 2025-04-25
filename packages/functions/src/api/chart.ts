@@ -1,13 +1,16 @@
 import { vValidator } from '@hono/valibot-validator';
 import { Hono } from 'hono';
 import { ChartSchemas, ChartService } from '@core/charts/chart';
-import { SeatSchemas, SeatService } from '@core/charts/seat';
 import { Schemas } from '@core/schema';
 import { Enviroment } from '@functions/auth/middleware';
+import assignments from './assignment';
+import furniture from './furniture';
 
 const app = new Hono<Enviroment>();
 
 export default app
+  .route('/:id/furniture', furniture)
+  .route('/:id/assignments', assignments)
   .get('/', vValidator('query', Schemas.Pagination), async (c) => {
     const ctx = c.get('ctx');
     const pagination = c.req.valid('query');
@@ -50,65 +53,21 @@ export default app
       return c.json(chart);
     }
   )
+  .patch(
+    '/:id/layout',
+    vValidator('json', ChartSchemas.UpdateLayout),
+    vValidator('param', Schemas.Params),
+    async (c) => {
+      const ctx = c.get('ctx');
+      const params = c.req.valid('param');
+      const data = c.req.valid('json');
+      const result = await ChartService.updateLayout(ctx, params, data);
+      return c.json(result);
+    }
+  )
   .delete('/:id', vValidator('param', Schemas.Params), async (c) => {
     const ctx = c.get('ctx');
     const params = c.req.valid('param');
     const result = await ChartService.remove(ctx, params);
     return c.json(result);
-  })
-  .get(
-    '/:chartId/seats',
-    vValidator('query', Schemas.Pagination),
-    vValidator('param', Schemas.Params),
-    async (c) => {
-      const ctx = c.get('ctx');
-      const params = c.req.valid('param');
-      const pagination = c.req.valid('query');
-      const seats = await SeatService.listByChart(ctx, params, pagination);
-      return c.json(seats);
-    }
-  )
-  .post(
-    '/:chartId/seats',
-    vValidator('json', SeatSchemas.Create),
-    vValidator('param', SeatSchemas.ChartIdParam),
-    async (c) => {
-      const ctx = c.get('ctx');
-      const data = c.req.valid('json');
-      const params = c.req.valid('param');
-      const seat = await SeatService.create(ctx, { ...data, chartId: params.chartId });
-      return c.json(seat, 201);
-    }
-  )
-  .get(
-    '/:chartId/seats/:id',
-    vValidator('param', SeatSchemas.NestedParams),
-    async (c) => {
-      const ctx = c.get('ctx');
-      const params = c.req.valid('param');
-      const seat = await SeatService.get(ctx, params);
-      return c.json(seat);
-    }
-  )
-  .patch(
-    '/:chartId/seats/:id',
-    vValidator('json', SeatSchemas.Patch),
-    vValidator('param', SeatSchemas.NestedParams),
-    async (c) => {
-      const ctx = c.get('ctx');
-      const params = c.req.valid('param');
-      const data = c.req.valid('json');
-      const seat = await SeatService.patch(ctx, params, data);
-      return c.json(seat);
-    }
-  )
-  .delete(
-    '/:chartId/seats/:id',
-    vValidator('param', SeatSchemas.NestedParams),
-    async (c) => {
-      const ctx = c.get('ctx');
-      const params = c.req.valid('param');
-      const result = await SeatService.remove(ctx, params);
-      return c.json(result);
-    }
-  );
+  });

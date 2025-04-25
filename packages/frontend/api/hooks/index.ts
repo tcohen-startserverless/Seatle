@@ -1,4 +1,5 @@
 export * from './charts';
-export * from './seats';
+export * from './furniture';
+export * from './assignments';
 export * from './lists';
 export * from './persons';

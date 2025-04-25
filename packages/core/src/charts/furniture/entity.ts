@@ -1,15 +1,15 @@
 import { Entity, EntityItem } from 'electrodb';
 import { ulid } from 'ulid';
 
-export const Seat = new Entity({
+export const Furniture = new Entity({
   model: {
-    entity: 'seat',
+    entity: 'furniture',
     version: '1',
     service: 'app',
   },
   attributes: {
     id: {
-      label: 'seatId',
+      label: 'furnitureId',
       type: 'string',
       required: true,
       default: () => ulid(),
@@ -21,10 +21,6 @@ export const Seat = new Entity({
     chartId: {
       type: 'string',
       required: true,
-    },
-    personId: {
-      type: 'string',
-      required: false,
     },
     x: {
       type: 'number',
@@ -86,29 +82,7 @@ export const Seat = new Entity({
         composite: ['chartId', 'id'],
       },
     },
-    byPerson: {
-      index: 'GSI1',
-      pk: {
-        field: 'gsi1pk',
-        composite: ['userId', 'personId'],
-      },
-      sk: {
-        field: 'gsi1sk',
-        composite: ['chartId', 'id'],
-      },
-    },
-    byChart: {
-      index: 'GSI2',
-      pk: {
-        field: 'gsi2pk',
-        composite: ['userId', 'chartId'],
-      },
-      sk: {
-        field: 'gsi2sk',
-        composite: ['type', 'id'],
-      },
-    },
   },
 });
 
-export type SeatItem = EntityItem<typeof Seat>;
+export type FurnitureItem = EntityItem<typeof Furniture>;

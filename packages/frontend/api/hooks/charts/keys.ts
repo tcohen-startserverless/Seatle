@@ -5,6 +5,6 @@ export const chartKeys = {
   list: (filters?: { status?: 'ACTIVE' | 'ARCHIVED'; cursor?: string; userId?: string }) =>
     [...chartKeys.charts(), { ...filters }] as const,
   detail: (chartId: string) => [...chartKeys.all, 'detail', chartId] as const,
-  items: (chartId: string) => [...chartKeys.all, 'items', chartId] as const,
+  furniture: (chartId: string) => [...chartKeys.all, 'furniture', chartId] as const,
   assignments: (chartId: string) => [...chartKeys.all, 'assignments', chartId] as const,
 };

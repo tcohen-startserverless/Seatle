@@ -1,43 +1,33 @@
 import { Entity, EntityItem } from 'electrodb';
 import { ulid } from 'ulid';
 
-export const Seating = new Entity({
+export const Assignment = new Entity({
   model: {
-    entity: 'seating',
+    entity: 'assignment',
     version: '1',
     service: 'app',
   },
   attributes: {
     id: {
-      label: 'seatingId',
       type: 'string',
       required: true,
       default: () => ulid(),
-    },
-    chartId: {
-      type: 'string',
-      required: true,
     },
     userId: {
       type: 'string',
       required: true,
     },
-    name: {
+    chartId: {
       type: 'string',
       required: true,
     },
-    rows: {
-      type: 'number',
+    furnitureId: {
+      type: 'string',
       required: true,
     },
-    columns: {
-      type: 'number',
+    personId: {
+      type: 'string',
       required: true,
-    },
-    status: {
-      type: ['ACTIVE', 'ARCHIVED'] as const,
-      required: true,
-      default: 'ACTIVE',
     },
     createdAt: {
       type: 'number',
@@ -63,7 +53,29 @@ export const Seating = new Entity({
         composite: ['chartId', 'id'],
       },
     },
+    byPerson: {
+      index: 'GSI1',
+      pk: {
+        field: 'gsi1pk',
+        composite: ['userId'],
+      },
+      sk: {
+        field: 'gsi1sk',
+        composite: ['personId'],
+      },
+    },
+    byFurniture: {
+      index: 'GSI2',
+      pk: {
+        field: 'gsi2pk',
+        composite: ['userId'],
+      },
+      sk: {
+        field: 'gsi2sk',
+        composite: ['furnitureId'],
+      },
+    },
   },
 });
 
-export type SeatingItem = EntityItem<typeof Seating>;
+export type AssignmentItem = EntityItem<typeof Assignment>;

@@ -4,7 +4,7 @@ import { chartKeys } from './keys';
 import { ChartSchemas } from '@core/charts/chart';
 import type { ChartItem } from '@core/charts/chart';
 import { Schemas } from '@core/schema';
-import { ChartsResponse } from '@core/charts';
+import { ChartsResponse, TransformedChartResponse } from '@core/charts';
 
 export const useCreateChart = () => {
   const queryClient = useQueryClient();
@@ -147,6 +147,66 @@ export const useDeleteChart = () => {
       if (!data) return;
       queryClient.invalidateQueries({ queryKey: chartKeys.detail(data.chartId) });
       queryClient.invalidateQueries({ queryKey: chartKeys.charts() });
+    },
+  });
+};
+
+// Hook for updating a chart layout with furniture and assignments
+export const useUpdateChartLayout = () => {
+  const queryClient = useQueryClient();
+  const { client } = useApiClient();
+
+  // Define the input type for the layout update
+  interface UpdateLayoutParams {
+    id: string;
+    data: ChartSchemas.Types.UpdateLayoutInput;
+  }
+
+  interface LayoutUpdateResponse {
+    transaction: {
+      success: boolean;
+      furnitureCreated: number;
+      furnitureUpdated: number;
+      furnitureDeleted: number;
+      assignmentsCreated: number;
+      assignmentsUpdated: number;
+      assignmentsDeleted: number;
+    };
+    chart: TransformedChartResponse | null;
+  }
+
+  type PreviousChartData = { previousChart?: TransformedChartResponse | null };
+
+  return useMutation<LayoutUpdateResponse, Error, UpdateLayoutParams, PreviousChartData>({
+    mutationFn: async ({ id, data }) => {
+      if (!client) throw new Error('API client not initialized');
+      const res = await client.chart[':id'].layout.$patch({
+        param: { id },
+        json: data,
+      });
+      return res.json();
+    },
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: chartKeys.detail(id) });
+      const previousChart = queryClient.getQueryData<TransformedChartResponse | null>(
+        chartKeys.detail(id)
+      );
+      return { previousChart };
+    },
+    onError: (_, variables, context) => {
+      if (context?.previousChart) {
+        queryClient.setQueryData(chartKeys.detail(variables.id), context.previousChart);
+      }
+    },
+    onSuccess: (data, variables) => {
+      if (!data.chart) return;
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: chartKeys.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: chartKeys.furniture(variables.id) });
+      queryClient.invalidateQueries({ queryKey: chartKeys.assignments(variables.id) });
+      
+      // Update the cache with the new chart data
+      queryClient.setQueryData(chartKeys.detail(variables.id), data.chart);
     },
   });
 };

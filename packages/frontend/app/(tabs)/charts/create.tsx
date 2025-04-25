@@ -12,7 +12,8 @@ import { TablePosition } from '@/components/FloorPlanEditor/types';
 import { useListLists } from '@/api/hooks/lists';
 import { useCreateChart } from '@/api/hooks/charts';
 import { useAuth } from '@/hooks/useAuth';
-import { useBulkCreateSeats } from '@/api/hooks/seats';
+import { useBulkCreateFurniture } from '@/api/hooks/furniture';
+import { useCreateAssignment } from '@/api/hooks/assignments';
 
 type FurnitureType = 'TABLE' | 'CHAIR';
 
@@ -243,11 +244,11 @@ export default function CreateClassScreen() {
       });
 
       if (furniture.length > 0) {
-        console.log('Creating seats:', furniture.length);
+        console.log('Creating furniture:', furniture.length);
 
-        const seatsMutation = useBulkCreateSeats(chart.chartId);
+        const furnitureMutation = useBulkCreateFurniture(chart.chartId);
 
-        const seatData = furniture.map((item) => ({
+        const furnitureData = furniture.map((item) => ({
           chartId: chart.chartId,
           id: item.id,
           type: item.type,
@@ -255,10 +256,21 @@ export default function CreateClassScreen() {
           y: item.y,
           width: item.type === 'TABLE' ? item.size : item.size,
           height: item.type === 'TABLE' ? item.size : item.size,
-          personId: item.personId,
         }));
 
-        console.log('Would create seats:', seatData.length);
+        console.log('Creating furniture items:', furnitureData.length);
+
+        const assignmentsToCreate = furniture
+          .filter((item) => item.personId)
+          .map((item) => ({
+            chartId: chart.chartId,
+            furnitureId: item.id,
+            personId: item.personId!,
+          }));
+
+        if (assignmentsToCreate.length > 0) {
+          console.log('Creating assignments:', assignmentsToCreate.length);
+        }
       }
 
       router.push(`/charts/${chart.chartId}`);
