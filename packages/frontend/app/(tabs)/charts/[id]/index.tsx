@@ -15,8 +15,6 @@ import { useThemeColor } from '@/theme';
 import { ArrowLeft, Square, Circle, Save, X, User } from 'lucide-react';
 import { FloorPlanEditor } from '@/components/FloorPlanEditor';
 import { useGetChart, useUpdateChartLayout } from '@/api/hooks/charts';
-import { useListChartFurniture } from '@/api/hooks/furniture';
-import { useListChartAssignments } from '@/api/hooks/assignments';
 import { useGetList } from '@/api/hooks/lists';
 
 type FurnitureType = 'TABLE' | 'CHAIR';
@@ -41,20 +39,20 @@ export default function ChartDetailScreen() {
   const {
     data: chartData,
     isLoading: chartLoading,
-    error: chartError,
+    error,
   } = useGetChart({ id: id || '' });
 
-  const {
-    data: furnitureData,
-    isLoading: furnitureLoading,
-    error: furnitureError,
-  } = useListChartFurniture(id || '');
+  // const {
+  //   data: furnitureData,
+  //   isLoading: furnitureLoading,
+  //   error: furnitureError,
+  // } = useListChartFurniture(id || '');
 
-  const {
-    data: assignmentsData,
-    isLoading: assignmentsLoading,
-    error: assignmentsError,
-  } = useListChartAssignments(id || '', '');
+  // const {
+  //   data: assignmentsData,
+  //   isLoading: assignmentsLoading,
+  //   error: assignmentsError,
+  // } = useListChartAssignments(id || '', '');
 
   const updateLayoutMutation = useUpdateChartLayout();
 
@@ -74,8 +72,7 @@ export default function ChartDetailScreen() {
   const [furniture, setFurniture] = useState<FurniturePosition[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  const isLoading = chartLoading || furnitureLoading || assignmentsLoading || isSaving;
-  const error = chartError || furnitureError || assignmentsError;
+  const isLoading = chartLoading || isSaving;
 
   const TABLE_SIZES = [
     { id: '1x1', size: 25, label: '1x1', type: 'TABLE' as FurnitureType },
@@ -90,18 +87,21 @@ export default function ChartDetailScreen() {
   ];
 
   useEffect(() => {
-    if (!furnitureData?.data || !assignmentsData?.data) {
+    // if (!furnitureData?.data || !assignmentsData?.data) {
+    //   return;
+    // }
+    if (!chartData?.furniture) {
       return;
     }
 
     const furnitureItems: FurniturePosition[] = [];
 
-    furnitureData.data.forEach((item) => {
+    chartData.furniture.forEach((item) => {
       const type = item.type === 'TABLE' ? 'TABLE' : 'CHAIR';
       const cells =
         type === 'TABLE' ? Math.floor((item.width * item.height) / (25 * 25)) : 1;
 
-      const assignment = assignmentsData.data.find((a) => a.furnitureId === item.id);
+      // const assignment = assignmentsData.data.find((a) => a.furnitureId === item.id);
 
       furnitureItems.push({
         id: item.id,
@@ -110,12 +110,12 @@ export default function ChartDetailScreen() {
         size: type === 'TABLE' ? item.width : item.height,
         type,
         cells,
-        personId: assignment?.personId,
+        // personId: assignment?.personId,
       });
     });
 
     setFurniture(furnitureItems);
-  }, [furnitureData, assignmentsData]);
+  }, [chartData]);
 
   const handleAddFurniture = (size: number, type: FurnitureType) => {
     const newItem: FurniturePosition = {
@@ -264,9 +264,8 @@ export default function ChartDetailScreen() {
     const chair = furniture.find((item) => item.id === chairId && item.type === 'CHAIR');
     if (!chair) return;
 
-    const assignment = assignmentsData?.data.find((a) => a.furnitureId === chairId);
+    // const assignment = assignmentsData?.data.find((a) => a.furnitureId === chairId);
 
-    // Set the selected chair and show the people assignment modal
     setSelectedChairId(chairId);
     setPersonAssignmentVisible(true);
   };
@@ -303,14 +302,14 @@ export default function ChartDetailScreen() {
 
     setIsSaving(true);
     try {
-      const existingFurnitureIds = furnitureData?.data?.map((item) => item.id) || [];
+      const existingFurnitureIds = chartData.furniture.map((item) => item.id) || [];
       const currentFurnitureIds = furniture.map((item) => item.id);
 
       const furnitureToDelete = existingFurnitureIds.filter(
         (itemId) => !currentFurnitureIds.includes(itemId)
       );
 
-      const existingAssignments = assignmentsData?.data || [];
+      // const existingAssignments = assignmentsData?.data || [];
 
       const existingItems = furniture.filter((item) =>
         existingFurnitureIds.includes(item.id)
@@ -322,33 +321,33 @@ export default function ChartDetailScreen() {
       const assignmentsToCreate: { furnitureId: string; personId: string }[] = [];
       const assignmentsToDelete: string[] = [];
 
-      furniture.forEach((item) => {
-        if (item.personId) {
-          const existingAssignment = existingAssignments.find(
-            (a) => a.furnitureId === item.id
-          );
+      // furniture.forEach((item) => {
+      //   if (item.personId) {
+      //     const existingAssignment = existingAssignments.find(
+      //       (a) => a.furnitureId === item.id
+      //     );
 
-          if (!existingAssignment) {
-            assignmentsToCreate.push({
-              furnitureId: item.id,
-              personId: item.personId,
-            });
-          } else if (existingAssignment.personId !== item.personId) {
-            assignmentsToDelete.push(existingAssignment.id);
-            assignmentsToCreate.push({
-              furnitureId: item.id,
-              personId: item.personId,
-            });
-          }
-        }
-      });
+      //     if (!existingAssignment) {
+      //       assignmentsToCreate.push({
+      //         furnitureId: item.id,
+      //         personId: item.personId,
+      //       });
+      //     } else if (existingAssignment.personId !== item.personId) {
+      //       assignmentsToDelete.push(existingAssignment.id);
+      //       assignmentsToCreate.push({
+      //         furnitureId: item.id,
+      //         personId: item.personId,
+      //       });
+      //     }
+      //   }
+      // });
 
-      existingAssignments.forEach((assignment) => {
-        const furnItem = furniture.find((item) => item.id === assignment.furnitureId);
-        if (!furnItem || !furnItem.personId) {
-          assignmentsToDelete.push(assignment.id);
-        }
-      });
+      // existingAssignments.forEach((assignment) => {
+      //   const furnItem = furniture.find((item) => item.id === assignment.furnitureId);
+      //   if (!furnItem || !furnItem.personId) {
+      //     assignmentsToDelete.push(assignment.id);
+      //   }
+      // });
 
       const layoutUpdateData = {
         furnitureToCreate: newItems.map((item) => ({
@@ -522,9 +521,9 @@ export default function ChartDetailScreen() {
                         const chair = furniture.find(
                           (item) => item.id === selectedChairId
                         );
-                        const assignment = assignmentsData?.data.find(
-                          (a) => a.furnitureId === selectedChairId
-                        );
+                        // const assignment = assignmentsData?.data.find(
+                        //   (a) => a.furnitureId === selectedChairId
+                        // );
 
                         if (chair?.personId) {
                           return (
