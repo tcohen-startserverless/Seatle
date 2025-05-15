@@ -1,4 +1,5 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/api/queryClient';
 import { useApiClient } from '@/api';
 import { furnitureKeys } from './keys';
 import { FurnitureSchemas } from '@core/charts/furniture';
@@ -6,7 +7,6 @@ import { Schemas } from '@core/schema';
 import type { FurnitureItem } from '@core/charts/furniture';
 
 export const useCreateFurniture = (chartId: string) => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
 
   return useMutation<FurnitureItem, Error, FurnitureSchemas.Types.Create>({
@@ -26,7 +26,6 @@ export const useCreateFurniture = (chartId: string) => {
 };
 
 export const useUpdateFurniture = () => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
   type UpdateParams = Schemas.Types.Params & FurnitureSchemas.Types.Patch;
 
@@ -58,14 +57,9 @@ export const useUpdateFurniture = () => {
 };
 
 export const useDeleteFurniture = () => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
 
-  return useMutation<
-    FurnitureItem | null, 
-    Error, 
-    { chartId: string; id: string }
-  >({
+  return useMutation<FurnitureItem | null, Error, { chartId: string; id: string }>({
     mutationFn: async ({ chartId, id }) => {
       if (!client) throw new Error('API client not initialized');
       const res = await client.chart[':id'].furniture[':furnitureId'].$delete({
@@ -85,13 +79,12 @@ export const useDeleteFurniture = () => {
 };
 
 export const useBulkCreateFurniture = (chartId: string) => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
 
   return useMutation<FurnitureItem[], Error, FurnitureSchemas.Types.Create[]>({
     mutationFn: async (furniture) => {
       if (!client) throw new Error('API client not initialized');
-      
+
       // Create furniture items one by one for better error handling
       const results = [];
       for (const item of furniture) {
@@ -103,7 +96,7 @@ export const useBulkCreateFurniture = (chartId: string) => {
               chartId, // Ensure chartId is set correctly
             },
           });
-          
+
           const result = await res.json();
           results.push(result);
         } catch (error) {
@@ -111,7 +104,7 @@ export const useBulkCreateFurniture = (chartId: string) => {
           throw error; // Rethrow to ensure mutation fails properly
         }
       }
-      
+
       return results;
     },
     onSuccess: () => {

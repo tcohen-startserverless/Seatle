@@ -1,4 +1,5 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/api/queryClient';
 import { useApiClient } from '@/api';
 import { personKeys } from './keys';
 import { listKeys } from '../lists/keys';
@@ -7,7 +8,6 @@ import type { PersonItem, PersonQueryResponse } from '@core/person';
 import { Schemas } from '@core/schema';
 
 export const useCreatePerson = () => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
 
   return useMutation<PersonItem, Error, PersonSchema.Types.Create>({
@@ -39,7 +39,6 @@ export const useCreatePerson = () => {
 };
 
 export const useUpdatePerson = () => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
   type UpdateParams = Schemas.Types.Params &
     PersonSchema.Types.Patch & {
@@ -121,7 +120,6 @@ export const useUpdatePerson = () => {
 };
 
 export const useDeletePerson = () => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
   type DeleteParams = Schemas.Types.Params & { listId?: string };
 

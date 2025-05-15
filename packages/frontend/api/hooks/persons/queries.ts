@@ -1,4 +1,5 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { queryClient } from '@/api/queryClient';
 import { useApiClient } from '@/api';
 import { personKeys } from './keys';
 import { Schemas } from '@core/schema';
@@ -6,7 +7,6 @@ import type { PersonItem, PersonQueryResponse } from '@core/person';
 
 export const useGetPerson = (params: Schemas.Types.Params) => {
   const { client, isLoading: clientLoading } = useApiClient();
-  const queryClient = useQueryClient();
 
   return useQuery<PersonItem | null, Error>({
     queryKey: personKeys.detail(params.id),

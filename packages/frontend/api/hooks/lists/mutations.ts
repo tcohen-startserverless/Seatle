@@ -1,12 +1,12 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useApiClient } from '@/api';
+import { queryClient } from '@/api/queryClient';
 import { listKeys } from './keys';
 import { ListSchemas } from '@core/list';
 import type { ListItem } from '@core/list';
 import { Schemas } from '@core/schema';
 
 export const useCreateList = () => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
 
   return useMutation<ListItem, Error, ListSchemas.Types.Create>({
@@ -26,7 +26,6 @@ export const useCreateList = () => {
 };
 
 export const useUpdateList = () => {
-  const queryClient = useQueryClient();
   type UpdateParams = Schemas.Types.Params & ListSchemas.Types.Patch;
   const { client } = useApiClient();
 
@@ -67,7 +66,6 @@ export const useUpdateList = () => {
 };
 
 export const useDeleteList = () => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
   type DeleteParams = Schemas.Types.Params;
 

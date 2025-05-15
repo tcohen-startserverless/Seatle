@@ -1,4 +1,5 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { queryClient } from '@/api/queryClient';
 import { useApiClient } from '@/api';
 import { chartKeys } from './keys';
 import { Schemas } from '@core/schema';
@@ -11,7 +12,6 @@ import {
 
 export const useGetChart = (params: Schemas.Types.Params) => {
   const { client, isLoading: clientLoading } = useApiClient();
-  const queryClient = useQueryClient();
 
   return useQuery<TransformedChartResponse | null, Error>({
     queryKey: chartKeys.detail(params.id),

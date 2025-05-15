@@ -1,11 +1,11 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/api/queryClient';
 import { useApiClient } from '@/api';
 import { assignmentKeys } from './keys';
 import { AssignmentSchemas } from '@core/charts/assignment';
 import type { AssignmentItem } from '@core/charts/assignment';
 
 export const useCreateAssignment = (chartId: string) => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
 
   return useMutation<AssignmentItem, Error, AssignmentSchemas.Types.Create>({
@@ -31,7 +31,6 @@ export const useCreateAssignment = (chartId: string) => {
 };
 
 export const useUpdateAssignment = () => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
 
   return useMutation<
@@ -72,7 +71,6 @@ export const useUpdateAssignment = () => {
 };
 
 export const useDeleteAssignment = () => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
 
   return useMutation<AssignmentItem | null, Error, { chartId: string; id: string }>({

@@ -30,8 +30,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useCreatePerson, useDeletePerson, useUpdatePerson } from '@/api/hooks/persons';
 import type { PersonItem } from '@seater/core/person';
 import { Animated, Easing } from 'react-native';
-import { useQueryClient } from '@tanstack/react-query';
-import { listKeys } from '@/api/hooks/lists/keys';
 import { TextInput } from '@/components/TextInput';
 import { useForm } from '@tanstack/react-form';
 

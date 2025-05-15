@@ -1,11 +1,11 @@
-import { View, StyleSheet, GestureResponderEvent } from 'react-native';
+import { View, StyleSheet, GestureResponderEvent, ScrollView } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useRef, useState } from 'react';
 import { useSeatingChartGestures } from './TableLayoutGestures';
 import { Grid } from './GridBackground';
-import { Tables } from './TableElements';
+import { FurnitureElements } from './FurnitureElements';
 import { SeatingChartProps } from './types';
 
 export function FloorPlanEditor({
@@ -13,11 +13,12 @@ export function FloorPlanEditor({
   maxRows = 60,
   maxColumns = 60,
   edgePadding = 10,
-  tables,
-  onTableUpdate,
+  furniture,
+  onFurnitureUpdate,
+  onChairAssign,
 }: SeatingChartProps) {
   const borderColor = useThemeColor({}, 'border');
-  const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const viewportRef = useRef<View>(null);
   const contentRef = useRef<Animated.View>(null);
   const [viewportDimensions, setViewportDimensions] = useState({ width: 0, height: 0 });
@@ -29,27 +30,27 @@ export function FloorPlanEditor({
     translateX,
     translateY,
   } = useSeatingChartGestures({
-    tables,
-    onTableUpdate,
+    furniture,
+    onFurnitureUpdate,
     cellSize,
     maxRows,
     maxColumns,
     viewportDimensions,
     contentDimensions,
     edgePadding,
-    onTablePress: (id) => setSelectedTableId(id),
-    setSelectedTableId,
+    onItemPress: (id) => setSelectedItemId(id),
+    setSelectedItemId,
   });
 
-  const handleTablePress = (tableId: string) => {
-    setSelectedTableId(tableId === selectedTableId ? null : tableId);
+  const handleItemPress = (itemId: string) => {
+    setSelectedItemId(itemId === selectedItemId ? null : itemId);
   };
 
-  const handleDeleteTable = (tableId: string, e: GestureResponderEvent) => {
+  const handleDeleteItem = (itemId: string, e: GestureResponderEvent) => {
     e.stopPropagation();
-    setSelectedTableId(null);
-    const updatedTables = tables.filter((t) => t.id !== tableId);
-    onTableUpdate?.(updatedTables);
+    setSelectedItemId(null);
+    const updatedFurniture = furniture.filter((item) => item.id !== itemId);
+    onFurnitureUpdate?.(updatedFurniture);
   };
 
   const measureViewport = () => {
@@ -74,34 +75,59 @@ export function FloorPlanEditor({
 
   return (
     <View style={styles.viewportContainer} ref={viewportRef} onLayout={measureViewport}>
-      <GestureDetector gesture={composed}>
-        <Animated.View
-          ref={contentRef}
-          onLayout={measureContent}
-          style={[styles.container, animatedStyle]}
+      <ScrollView 
+        horizontal
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsHorizontalScrollIndicator={false} 
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+        bouncesZoom={true}
+        scrollEventThrottle={16}
+      >
+        <ScrollView
+          contentContainerStyle={{ 
+            width: cellSize * maxColumns + (edgePadding * 2),
+            minHeight: cellSize * maxRows + (edgePadding * 2) 
+          }}
+          showsVerticalScrollIndicator={false}
+          bounces={true}
+          scrollEventThrottle={16}
         >
-          <View
-            style={[
-              styles.container,
-              { width: cellSize * maxColumns, padding: edgePadding },
-            ]}
-          >
-            <Grid
-              rows={maxRows}
-              columns={maxColumns}
-              cellSize={cellSize}
-              borderColor={borderColor}
-            />
-            <Tables
-              tables={tables}
-              selectedTableId={selectedTableId}
-              cellSize={cellSize}
-              onTablePress={handleTablePress}
-              onDeleteTable={handleDeleteTable}
-            />
-          </View>
-        </Animated.View>
-      </GestureDetector>
+          <GestureDetector gesture={composed}>
+            <Animated.View
+              ref={contentRef}
+              onLayout={measureContent}
+              style={[styles.container, animatedStyle]}
+            >
+              <View
+                style={[
+                  styles.container,
+                  { 
+                    width: cellSize * maxColumns,
+                    minHeight: cellSize * maxRows,
+                    padding: edgePadding
+                  },
+                ]}
+              >
+                <Grid
+                  rows={maxRows}
+                  columns={maxColumns}
+                  cellSize={cellSize}
+                  borderColor={borderColor}
+                />
+                <FurnitureElements
+                  furniture={furniture}
+                  selectedItemId={selectedItemId}
+                  cellSize={cellSize}
+                  onItemPress={handleItemPress}
+                  onDeleteItem={handleDeleteItem}
+                  onChairAssign={onChairAssign}
+                />
+              </View>
+            </Animated.View>
+          </GestureDetector>
+        </ScrollView>
+      </ScrollView>
     </View>
   );
 }
@@ -114,41 +140,12 @@ const styles = StyleSheet.create({
   },
   container: {
     minWidth: 'auto',
+    position: 'relative',
   },
   row: {
     flexDirection: 'row',
   },
   cell: {
     borderWidth: 1,
-  },
-  table: {
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tableWrapper: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  deleteButton: {
-    position: 'absolute',
-    top: -16,
-    right: -16,
-    zIndex: 100,
-  },
-  deleteButtonInner: {
-    padding: 8,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
   },
 });

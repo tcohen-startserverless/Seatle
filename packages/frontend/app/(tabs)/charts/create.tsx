@@ -8,7 +8,7 @@ import { FloorPlanEditor } from '@/components/FloorPlanEditor';
 import { ArrowLeft, Square, Circle, Save, X } from 'lucide-react';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import { useState } from 'react';
-import { TablePosition } from '@/components/FloorPlanEditor/types';
+import { FurniturePosition } from '@/components/FloorPlanEditor/types';
 import { useListLists } from '@/api/hooks/lists';
 import { useCreateChart } from '@/api/hooks/charts';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,8 +17,7 @@ import { useCreateAssignment } from '@/api/hooks/assignments';
 
 type FurnitureType = 'TABLE' | 'CHAIR';
 
-type FurniturePosition = TablePosition & {
-  type: FurnitureType;
+type CustomFurniturePosition = FurniturePosition & {
   personId?: string;
   personName?: string;
 };
@@ -44,7 +43,7 @@ export default function CreateClassScreen() {
   const createChartMutation = useCreateChart();
   const isCreating = createChartMutation.isPending;
 
-  const [furniture, setFurniture] = useState<FurniturePosition[]>([]);
+  const [furniture, setFurniture] = useState<CustomFurniturePosition[]>([]);
 
   const [chartName, setChartName] = useState('');
   const [chartDescription, setChartDescription] = useState('');
@@ -339,17 +338,12 @@ export default function CreateClassScreen() {
 
         <View style={styles.rightPanel}>
           <FloorPlanEditor
-            tables={furniture.filter((item) => item.type === 'TABLE')}
-            onTableUpdate={(updatedTables) => {
-              // Update tables while preserving chairs
-              const chairs = furniture.filter((item) => item.type === 'CHAIR');
-              const newTables = updatedTables.map((table) => ({
-                ...table,
-                type: 'TABLE' as FurnitureType,
-              }));
-              setFurniture([...newTables, ...chairs]);
+            furniture={furniture}
+            onFurnitureUpdate={(updatedFurniture) => {
+              setFurniture(updatedFurniture as CustomFurniturePosition[]);
             }}
             edgePadding={32}
+            onChairAssign={handleChairClick}
           />
 
           {/* Show chair positions as interactive elements */}

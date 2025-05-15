@@ -1,4 +1,5 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/api/queryClient';
 import { useApiClient } from '@/api';
 import { chartKeys } from './keys';
 import { ChartSchemas } from '@core/charts/chart';
@@ -7,10 +8,9 @@ import { Schemas } from '@core/schema';
 import { ChartsResponse, TransformedChartResponse } from '@core/charts';
 
 export const useCreateChart = () => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
 
-  return useMutation<ChartItem, Error, ChartSchemas.Types.CreateInput>({  
+  return useMutation<ChartItem, Error, ChartSchemas.Types.CreateInput>({
     mutationFn: async (params) => {
       if (!client) throw new Error('API client not initialized');
       const res = await client.chart.$post({
@@ -32,13 +32,12 @@ export const useCreateChart = () => {
 };
 
 export const useUpdateChart = () => {
-  const queryClient = useQueryClient();
   type UpdateParams = Schemas.Types.Params & ChartSchemas.Types.PatchInput;
   const { client } = useApiClient();
 
   type PreviousChartData = { previousChart?: ChartsResponse | null };
 
-  return useMutation<ChartItem, Error, UpdateParams, PreviousChartData>({    
+  return useMutation<ChartItem, Error, UpdateParams, PreviousChartData>({
     mutationFn: async ({ id, ...params }: UpdateParams) => {
       if (!client) throw new Error('API client not initialized');
       const res = await client.chart[':id'].$patch({
@@ -88,19 +87,13 @@ export const useUpdateChart = () => {
 };
 
 export const useDeleteChart = () => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
   type DeleteParams = Schemas.Types.Params;
 
   type ChartRef = { userId: string; chartId: string };
   type PreviousChartData = { previousChart?: ChartsResponse | null };
-  
-  return useMutation<
-    ChartRef | null,
-    Error,
-    DeleteParams,
-    PreviousChartData
-  >({
+
+  return useMutation<ChartRef | null, Error, DeleteParams, PreviousChartData>({
     mutationFn: async ({ id }) => {
       if (!client) throw new Error('API client not initialized');
       const res = await client.chart[':id'].$delete({
@@ -112,28 +105,28 @@ export const useDeleteChart = () => {
       }
       return {
         userId: deletedChart.userId,
-        chartId: deletedChart.chartId
+        chartId: deletedChart.chartId,
       };
     },
     onMutate: async ({ id }) => {
       await queryClient.cancelQueries({ queryKey: chartKeys.detail(id) });
-      const previousChart = queryClient.getQueryData<ChartsResponse | null>(chartKeys.detail(id));
+      const previousChart = queryClient.getQueryData<ChartsResponse | null>(
+        chartKeys.detail(id)
+      );
 
       queryClient.setQueryData(chartKeys.detail(id), undefined);
 
       // Update the list query cache
-      queryClient.setQueryData<ChartsResponse | undefined>(
-        chartKeys.charts(),
-        (old) =>
-          old && old.data?.Chart
-            ? {
-                ...old,
-                data: {
-                  ...old.data,
-                  Chart: old.data.Chart.filter((chart) => chart.chartId !== id)
-                }
-              }
-            : undefined
+      queryClient.setQueryData<ChartsResponse | undefined>(chartKeys.charts(), (old) =>
+        old && old.data?.Chart
+          ? {
+              ...old,
+              data: {
+                ...old.data,
+                Chart: old.data.Chart.filter((chart) => chart.chartId !== id),
+              },
+            }
+          : undefined
       );
 
       return { previousChart };
@@ -151,9 +144,7 @@ export const useDeleteChart = () => {
   });
 };
 
-// Hook for updating a chart layout with furniture and assignments
 export const useUpdateChartLayout = () => {
-  const queryClient = useQueryClient();
   const { client } = useApiClient();
 
   // Define the input type for the layout update
@@ -200,12 +191,9 @@ export const useUpdateChartLayout = () => {
     },
     onSuccess: (data, variables) => {
       if (!data.chart) return;
-      // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: chartKeys.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: chartKeys.furniture(variables.id) });
       queryClient.invalidateQueries({ queryKey: chartKeys.assignments(variables.id) });
-      
-      // Update the cache with the new chart data
       queryClient.setQueryData(chartKeys.detail(variables.id), data.chart);
     },
   });

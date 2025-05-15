@@ -1,11 +1,14 @@
 import { GestureResponderEvent } from 'react-native';
 
-export interface TablePosition {
+export interface FurniturePosition {
   id: string;
   x: number;
   y: number;
   size: number;
-  cells: number;
+  cells?: number;
+  type: 'TABLE' | 'CHAIR';
+  personId?: string;
+  personName?: string;
 }
 
 export interface ViewDimensions {
@@ -20,14 +23,16 @@ export interface SeatingChartProps {
   maxRows?: number;
   maxColumns?: number;
   edgePadding?: number;
-  tables: TablePosition[];
-  onTableUpdate: (tables: TablePosition[]) => void;
+  furniture: FurniturePosition[];
+  onFurnitureUpdate: (furniture: FurniturePosition[]) => void;
+  onChairAssign?: (chairId: string) => void;
 }
 
-export interface TablesProps {
-  tables: TablePosition[];
-  selectedTableId: string | null;
+export interface FurnitureElementsProps {
+  furniture: FurniturePosition[];
+  selectedItemId: string | null;
   cellSize: number;
-  onTablePress: (id: string) => void;
-  onDeleteTable: (id: string, e: GestureResponderEvent) => void;
+  onItemPress: (id: string) => void;
+  onDeleteItem: (id: string, e: GestureResponderEvent) => void;
+  onChairAssign?: (chairId: string) => void;
 }

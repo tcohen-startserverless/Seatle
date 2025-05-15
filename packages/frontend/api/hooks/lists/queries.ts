@@ -1,4 +1,5 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { queryClient } from '@/api/queryClient';
 import { useApiClient } from '@/api';
 import { listKeys } from './keys';
 import { Schemas } from '@core/schema';
@@ -7,7 +8,6 @@ import type { ListItem, CompleteList, ListQueryResponse } from '@core/list';
 
 export const useGetList = (params: Schemas.Types.Params) => {
   const { client, isLoading: clientLoading } = useApiClient();
-  const queryClient = useQueryClient();
 
   return useQuery<CompleteList | null, Error>({
     queryKey: listKeys.detail(params.id),

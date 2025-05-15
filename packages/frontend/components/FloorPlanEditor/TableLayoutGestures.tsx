@@ -1,29 +1,29 @@
 import { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import { Gesture } from 'react-native-gesture-handler';
-import { TablePosition } from './types';
+import { FurniturePosition } from './types';
 
 export function useSeatingChartGestures({
-  tables,
-  onTableUpdate,
+  furniture,
+  onFurnitureUpdate,
   cellSize,
   maxRows,
   maxColumns,
   viewportDimensions,
   contentDimensions,
   edgePadding,
-  onTablePress,
-  setSelectedTableId,
+  onItemPress,
+  setSelectedItemId,
 }: {
-  tables: TablePosition[];
-  onTableUpdate: (tables: TablePosition[]) => void;
+  furniture: FurniturePosition[];
+  onFurnitureUpdate: (furniture: FurniturePosition[]) => void;
   cellSize: number;
   maxRows: number;
   maxColumns: number;
   viewportDimensions: { width: number; height: number };
   contentDimensions: { width: number; height: number };
   edgePadding: number;
-  onTablePress: (id: string) => void;
-  setSelectedTableId: (id: string | null) => void;
+  onItemPress: (id: string) => void;
+  setSelectedItemId: (id: string | null) => void;
 }) {
   const scale = useSharedValue(1);
   const savedScale = useSharedValue(1);
@@ -31,21 +31,21 @@ export function useSeatingChartGestures({
   const translateY = useSharedValue(0);
   const savedTranslateX = useSharedValue(0);
   const savedTranslateY = useSharedValue(0);
-  const activeTableId = useSharedValue<string | null>(null);
+  const activeFurnitureId = useSharedValue<string | null>(null);
 
-  const checkCollision = (table1: TablePosition, table2: TablePosition): boolean => {
+  const checkCollision = (item1: FurniturePosition, item2: FurniturePosition): boolean => {
     const rect1 = {
-      left: table1.x,
-      right: table1.x + (table1.size === 25 ? 1 : table1.size === 50 ? 2 : 3),
-      top: table1.y,
-      bottom: table1.y + (table1.size === 25 ? 1 : table1.size === 50 ? 2 : 3),
+      left: item1.x,
+      right: item1.x + (item1.size === 25 ? 1 : item1.size === 50 ? 2 : 3),
+      top: item1.y,
+      bottom: item1.y + (item1.size === 25 ? 1 : item1.size === 50 ? 2 : 3),
     };
 
     const rect2 = {
-      left: table2.x,
-      right: table2.x + (table2.size === 25 ? 1 : table2.size === 50 ? 2 : 3),
-      top: table2.y,
-      bottom: table2.y + (table2.size === 25 ? 1 : table2.size === 50 ? 2 : 3),
+      left: item2.x,
+      right: item2.x + (item2.size === 25 ? 1 : item2.size === 50 ? 2 : 3),
+      top: item2.y,
+      bottom: item2.y + (item2.size === 25 ? 1 : item2.size === 50 ? 2 : 3),
     };
 
     return !(
@@ -57,12 +57,12 @@ export function useSeatingChartGestures({
   };
 
   const hasCollision = (
-    tableToCheck: TablePosition,
-    allTables: TablePosition[],
+    itemToCheck: FurniturePosition,
+    allItems: FurniturePosition[],
     excludeId?: string
   ): boolean => {
-    return allTables.some(
-      (table) => table.id !== excludeId && checkCollision(tableToCheck, table)
+    return allItems.some(
+      (item) => item.id !== excludeId && checkCollision(itemToCheck, item)
     );
   };
 
@@ -77,10 +77,32 @@ export function useSeatingChartGestures({
   const panGesture = Gesture.Pan()
     .minDistance(5)
     .onStart((e) => {
-      setSelectedTableId(null);
       const x = (e.x - translateX.value) / (cellSize * scale.value);
       const y = (e.y - translateY.value) / (cellSize * scale.value);
 
+      // First check chairs, then tables - prioritize chair selection
+      const chairs = furniture.filter(item => item.type === 'CHAIR');
+      const tables = furniture.filter(item => item.type === 'TABLE');
+      
+      // Check for chair hits first with a slightly more generous hit area
+      const hitChair = chairs.find((chair) => {
+        const chairSize = chair.size / cellSize;
+        // Add a small buffer (0.2 cells) to make chair easier to grab
+        return (
+          x >= chair.x - 0.2 &&
+          x <= chair.x + chairSize + 0.2 &&
+          y >= chair.y - 0.2 &&
+          y <= chair.y + chairSize + 0.2
+        );
+      });
+      
+      if (hitChair) {
+        setSelectedItemId(null);
+        activeFurnitureId.value = hitChair.id;
+        return;
+      }
+      
+      // Otherwise check tables with normal hit detection
       const hitTable = tables.find((table) => {
         const tableSize = table.size / cellSize;
         return (
@@ -92,56 +114,35 @@ export function useSeatingChartGestures({
       });
 
       if (hitTable) {
-        activeTableId.value = hitTable.id;
+        setSelectedItemId(null);
+        activeFurnitureId.value = hitTable.id;
       }
     })
     .onUpdate((e) => {
-      if (activeTableId.value) {
-        const newTables = tables.map((table) => {
-          if (table.id === activeTableId.value) {
+      if (activeFurnitureId.value) {
+        const newFurniture = furniture.map((item) => {
+          if (item.id === activeFurnitureId.value) {
             const newX = Math.floor((e.x - translateX.value) / (cellSize * scale.value));
             const newY = Math.floor((e.y - translateY.value) / (cellSize * scale.value));
             const potentialPosition = {
-              ...table,
+              ...item,
               x: Math.max(0, Math.min(maxColumns - 1, newX)),
               y: Math.max(0, Math.min(maxRows - 1, newY)),
             };
 
-            if (!hasCollision(potentialPosition, tables, table.id)) {
+            if (!hasCollision(potentialPosition, furniture, item.id)) {
               return potentialPosition;
             }
-            return table;
+            return item;
           }
-          return table;
+          return item;
         });
-        onTableUpdate(newTables);
-      } else {
-        const scaledContentWidth =
-          (contentDimensions.width + edgePadding * 2) * scale.value;
-        const scaledContentHeight =
-          (contentDimensions.height + edgePadding * 2) * scale.value;
-
-        const minX = -(scaledContentWidth - viewportDimensions.width);
-        const maxX = edgePadding;
-        const minY = -(scaledContentHeight - viewportDimensions.height);
-        const maxY = edgePadding;
-
-        translateX.value = Math.min(
-          maxX,
-          Math.max(minX, savedTranslateX.value + e.translationX)
-        );
-        translateY.value = Math.min(
-          maxY,
-          Math.max(minY, savedTranslateY.value + e.translationY)
-        );
+        onFurnitureUpdate(newFurniture);
       }
     })
     .onEnd(() => {
-      if (activeTableId.value) {
-        activeTableId.value = null;
-      } else {
-        savedTranslateX.value = translateX.value;
-        savedTranslateY.value = translateY.value;
+      if (activeFurnitureId.value) {
+        activeFurnitureId.value = null;
       }
     });
 
@@ -153,6 +154,29 @@ export function useSeatingChartGestures({
         const x = (e.x - translateX.value) / (cellSize * scale.value);
         const y = (e.y - translateY.value) / (cellSize * scale.value);
 
+        // First check chairs, then tables - prioritize chair selection
+        const chairs = furniture.filter(item => item.type === 'CHAIR');
+        const tables = furniture.filter(item => item.type === 'TABLE');
+        
+        // Check for chair hits first with a slightly more generous hit area
+        const hitChair = chairs.find((chair) => {
+          const chairSize = chair.size / cellSize;
+          // Add a small buffer to make chair easier to tap
+          return (
+            x >= chair.x - 0.2 &&
+            x <= chair.x + chairSize + 0.2 &&
+            y >= chair.y - 0.2 &&
+            y <= chair.y + chairSize + 0.2
+          );
+        });
+        
+        // If we hit a chair, use it
+        if (hitChair) {
+          onItemPress(hitChair.id);
+          return;
+        }
+        
+        // Otherwise check tables with normal hit detection
         const hitTable = tables.find((table) => {
           const tableSize = table.size / cellSize;
           return (
@@ -164,9 +188,9 @@ export function useSeatingChartGestures({
         });
 
         if (hitTable) {
-          onTablePress(hitTable.id);
+          onItemPress(hitTable.id);
         } else {
-          setSelectedTableId(null);
+          setSelectedItemId(null);
         }
       })
   );
