@@ -23,15 +23,15 @@ type CustomFurniturePosition = FurniturePosition & {
 };
 
 const TABLE_SIZES = [
-  { id: '1x1', size: 25, label: '1x1', type: 'TABLE' as FurnitureType },
-  { id: '2x2', size: 50, label: '2x2', type: 'TABLE' as FurnitureType },
-  { id: '3x3', size: 75, label: '3x3', type: 'TABLE' as FurnitureType },
+  { id: '1x1', size: 25, label: '1x1', type: 'TABLE' as const },
+  { id: '2x2', size: 50, label: '2x2', type: 'TABLE' as const },
+  { id: '3x3', size: 75, label: '3x3', type: 'TABLE' as const },
 ];
 
 const CHAIR_SIZES = [
-  { id: 'chair-small', size: 15, label: 'Small', type: 'CHAIR' as FurnitureType },
-  { id: 'chair-medium', size: 20, label: 'Medium', type: 'CHAIR' as FurnitureType },
-  { id: 'chair-large', size: 25, label: 'Large', type: 'CHAIR' as FurnitureType },
+  { id: 'chair-small', size: 15, label: 'Small', type: 'CHAIR' as const },
+  { id: 'chair-medium', size: 20, label: 'Medium', type: 'CHAIR' as const },
+  { id: 'chair-large', size: 25, label: 'Large', type: 'CHAIR' as const },
 ];
 
 export default function CreateClassScreen() {
@@ -382,7 +382,7 @@ export default function CreateClassScreen() {
                       x: newX,
                       y: newY,
                       size: chair.size,
-                      type: 'CHAIR' as FurnitureType,
+                      type: 'CHAIR' as const,
                       cells: chair.cells || 1,
                     };
 
