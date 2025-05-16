@@ -1,5 +1,6 @@
 import { QueryClient, keepPreviousData } from '@tanstack/react-query';
 
+// Create a client with extended gc time for persistence support
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -8,6 +9,7 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: true,
       placeholderData: keepPreviousData,
       refetchOnMount: 'always',
+      gcTime: 1000 * 60 * 60 * 24 * 7,
     },
   },
 });

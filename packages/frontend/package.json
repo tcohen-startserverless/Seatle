@@ -15,6 +15,7 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@tanstack/react-query-persist-client": "^5.76.1",
     "@hookform/resolvers": "^3.10.0",
     "@openauthjs/openauth": "*",
     "@react-native-async-storage/async-storage": "^2.1.2",
