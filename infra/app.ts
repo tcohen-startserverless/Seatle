@@ -25,7 +25,7 @@ export const web = new sst.aws.StaticSite('Web', {
   },
   path: 'packages/frontend',
   build: {
-    command: 'bunx expo export web',
+    command: 'bun run build:web',
     output: 'web-build',
   },
   environment: {
