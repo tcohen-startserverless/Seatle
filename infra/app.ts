@@ -26,7 +26,7 @@ export const web = new sst.aws.StaticSite('Web', {
   path: 'packages/frontend',
   build: {
     command: 'bun run build:web',
-    output: 'web-build',
+    output: 'dist',
   },
   environment: {
     EXPO_PUBLIC_API_URL: api.url,
