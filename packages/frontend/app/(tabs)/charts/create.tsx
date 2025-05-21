@@ -14,6 +14,7 @@ import { useCreateChart } from '@/api/hooks/charts';
 import { useAuth } from '@/hooks/useAuth';
 import { useBulkCreateFurniture } from '@/api/hooks/furniture';
 import { useCreateAssignment } from '@/api/hooks/assignments';
+import { hasCollision } from '@/utils/furnitureHelpers';
 
 type FurnitureType = 'TABLE' | 'CHAIR';
 
@@ -54,39 +55,6 @@ export default function CreateClassScreen() {
   const [selectedChairId, setSelectedChairId] = useState<string | null>(null);
 
   const { data: listsData } = useListLists();
-
-  const hasCollision = (
-    itemToCheck: FurniturePosition,
-    allItems: FurniturePosition[]
-  ) => {
-    for (const item of allItems) {
-      if (item.id === itemToCheck.id) continue;
-
-      const rect1 = {
-        left: itemToCheck.x,
-        right: itemToCheck.x + Math.floor(itemToCheck.size / 25),
-        top: itemToCheck.y,
-        bottom: itemToCheck.y + Math.floor(itemToCheck.size / 25),
-      };
-      const rect2 = {
-        left: item.x,
-        right: item.x + Math.floor(item.size / 25),
-        top: item.y,
-        bottom: item.y + Math.floor(item.size / 25),
-      };
-      if (
-        !(
-          rect1.right <= rect2.left ||
-          rect1.left >= rect2.right ||
-          rect1.bottom <= rect2.top ||
-          rect1.top >= rect2.bottom
-        )
-      ) {
-        return true;
-      }
-    }
-    return false;
-  };
 
   const handleFurnitureSelect = (size: number, type: FurnitureType) => {
     const newItem: FurniturePosition = {

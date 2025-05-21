@@ -40,7 +40,12 @@ export default function ChartDetailScreen() {
     id: chartData?.listId || '',
   });
 
-  const [furniture, setFurniture] = useState<FurniturePosition[]>([]);
+  const [furniture, setFurniture] = useState<
+    (FurniturePosition & { personId?: string; personName?: string })[]
+  >([]);
+  const [assignments, setAssignments] = useState<
+    Record<string, { id: string; personId: string }>
+  >({});
   const [isSaving, setIsSaving] = useState(false);
 
   const isLoading = chartLoading || isSaving;
@@ -50,12 +55,37 @@ export default function ChartDetailScreen() {
       return;
     }
 
-    const furnitureItems: FurniturePosition[] = [];
+    const furnitureItems: (FurniturePosition & {
+      personId?: string;
+      personName?: string;
+    })[] = [];
+    const assignmentsMap: Record<string, { id: string; personId: string }> = {};
+
+    if (chartData.assignments && chartData.assignments.length > 0) {
+      chartData.assignments.forEach((assignment) => {
+        assignmentsMap[assignment.furnitureId] = {
+          id: assignment.id,
+          personId: assignment.personId,
+        };
+      });
+    }
 
     chartData.furniture.forEach((item) => {
       const type = item.type === 'TABLE' ? 'TABLE' : 'CHAIR';
       const cells =
         type === 'TABLE' ? Math.floor((item.width * item.height) / (25 * 25)) : 1;
+
+      const assignment = assignmentsMap[item.id];
+      let personId: string | undefined;
+      let personName: string | undefined;
+
+      if (assignment && listData?.people) {
+        personId = assignment.personId;
+        const person = listData.people.find((p) => p.id === personId);
+        if (person) {
+          personName = `${person.firstName} ${person.lastName}`;
+        }
+      }
 
       furnitureItems.push({
         id: item.id,
@@ -64,11 +94,14 @@ export default function ChartDetailScreen() {
         size: type === 'TABLE' ? item.width : item.height,
         type,
         cells,
+        personId,
+        personName,
       });
     });
 
     setFurniture(furnitureItems);
-  }, [chartData]);
+    setAssignments(assignmentsMap);
+  }, [chartData, listData]);
 
   const handleAddFurniture = (size: number, type: 'TABLE' | 'CHAIR') => {
     const newItem: FurniturePosition = {
@@ -114,6 +147,22 @@ export default function ChartDetailScreen() {
         item.id === selectedChairId ? { ...item, personId, personName } : item
       )
     );
+
+    setAssignments((prev) => {
+      const currentAssignment = prev[selectedChairId];
+      if (currentAssignment) {
+        return {
+          ...prev,
+          [selectedChairId]: { ...currentAssignment, personId },
+        };
+      } else {
+        return {
+          ...prev,
+          [selectedChairId]: { id: `temp-${Date.now()}`, personId },
+        };
+      }
+    });
+
     setPersonAssignmentVisible(false);
   };
 
@@ -127,6 +176,13 @@ export default function ChartDetailScreen() {
           : item
       )
     );
+
+    setAssignments((prev) => {
+      const newAssignments = { ...prev };
+      delete newAssignments[selectedChairId];
+      return newAssignments;
+    });
+
     setPersonAssignmentVisible(false);
   };
 
@@ -152,6 +208,45 @@ export default function ChartDetailScreen() {
         (item) => !existingFurnitureIds.includes(item.id)
       );
 
+      const existingAssignments = chartData.assignments || [];
+      const existingAssignmentIds = existingAssignments.map((a) => a.id);
+      const currentAssignmentFurnitureIds = Object.keys(assignments);
+
+      const furnitureWithAssignments = furniture.filter(
+        (f) => f.personId && f.type === 'CHAIR'
+      );
+
+      const assignmentsToCreate = furnitureWithAssignments
+        .filter((f) => {
+          const assignment = assignments[f.id];
+          return !assignment || !existingAssignmentIds.includes(assignment.id);
+        })
+        .map((f) => ({
+          furnitureId: f.id,
+          personId: f.personId!,
+        }));
+
+      const assignmentsToUpdate = furnitureWithAssignments
+        .filter((f) => {
+          const assignment = assignments[f.id];
+          return (
+            assignment &&
+            assignment.id.indexOf('temp-') === -1 &&
+            existingAssignmentIds.includes(assignment.id) &&
+            existingAssignments.some(
+              (a) => a.id === assignment.id && a.personId !== f.personId
+            )
+          );
+        })
+        .map((f) => ({
+          id: assignments[f.id]?.id || '',
+          personId: f.personId!,
+        }));
+
+      const assignmentsToDelete = existingAssignments
+        .filter((a) => !currentAssignmentFurnitureIds.includes(a.furnitureId))
+        .map((a) => a.id);
+
       const layoutUpdateData = {
         furnitureToCreate: newItems.map((item) => ({
           id: item.id,
@@ -174,8 +269,9 @@ export default function ChartDetailScreen() {
         })),
 
         furnitureToDelete,
-        assignmentsToCreate: [],
-        assignmentsToDelete: [],
+        assignmentsToCreate,
+        assignmentsToUpdate,
+        assignmentsToDelete,
       };
 
       const result = await updateLayoutMutation.mutateAsync({
@@ -252,8 +348,6 @@ export default function ChartDetailScreen() {
             onChairAssign={handleChairClick}
             edgePadding={32}
           />
-
-
         </View>
       </View>
 

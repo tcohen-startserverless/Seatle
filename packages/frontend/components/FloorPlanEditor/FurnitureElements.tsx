@@ -92,6 +92,8 @@ export function FurnitureElements({
                     width: item.size,
                     height: item.size,
                     backgroundColor: item.personId ? '#4CAF50' : '#666',
+                    borderColor: item.personId ? '#2E7D32' : '#444',
+                    borderWidth: item.personId ? 2 : 1,
                     // Add a subtle shadow to make chairs stand out
                     shadowColor: '#000',
                     shadowOffset: { width: 0, height: 1 },
@@ -101,8 +103,22 @@ export function FurnitureElements({
                   },
                 ]}
               >
+                {item.personId && !item.personName && (
+                  <View style={styles.assignedIndicator} />
+                )}
                 {item.personName && (
-                  <ThemedText style={styles.personName} numberOfLines={1}>
+                  <ThemedText 
+                    style={[
+                      styles.personName, 
+                      { 
+                        fontSize: item.size > 20 ? 10 : 8,
+                        textShadowColor: 'rgba(0,0,0,0.7)',
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 1,
+                      }
+                    ]} 
+                    numberOfLines={1}
+                  >
                     {item.personName}
                   </ThemedText>
                 )}
@@ -147,10 +163,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#444',
   },
+  assignedIndicator: {
+    width: 6,
+    height: 6,
+    backgroundColor: 'white',
+    borderRadius: 3,
+  },
   personName: {
     fontSize: 10,
     color: 'white',
+    fontWeight: '600',
     textAlign: 'center',
+    paddingHorizontal: 2,
   },
   deleteButton: {
     position: 'absolute',

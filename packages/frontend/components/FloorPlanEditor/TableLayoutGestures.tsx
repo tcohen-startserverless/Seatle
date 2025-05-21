@@ -1,6 +1,7 @@
 import { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import { Gesture } from 'react-native-gesture-handler';
 import { FurniturePosition } from './types';
+import { hasCollision } from '@/utils/furnitureHelpers';
 
 export function useSeatingChartGestures({
   furniture,
@@ -33,39 +34,6 @@ export function useSeatingChartGestures({
   const savedTranslateY = useSharedValue(0);
   const activeFurnitureId = useSharedValue<string | null>(null);
 
-  const checkCollision = (item1: FurniturePosition, item2: FurniturePosition): boolean => {
-    const rect1 = {
-      left: item1.x,
-      right: item1.x + (item1.size === 25 ? 1 : item1.size === 50 ? 2 : 3),
-      top: item1.y,
-      bottom: item1.y + (item1.size === 25 ? 1 : item1.size === 50 ? 2 : 3),
-    };
-
-    const rect2 = {
-      left: item2.x,
-      right: item2.x + (item2.size === 25 ? 1 : item2.size === 50 ? 2 : 3),
-      top: item2.y,
-      bottom: item2.y + (item2.size === 25 ? 1 : item2.size === 50 ? 2 : 3),
-    };
-
-    return !(
-      rect1.right <= rect2.left ||
-      rect1.left >= rect2.right ||
-      rect1.bottom <= rect2.top ||
-      rect1.top >= rect2.bottom
-    );
-  };
-
-  const hasCollision = (
-    itemToCheck: FurniturePosition,
-    allItems: FurniturePosition[],
-    excludeId?: string
-  ): boolean => {
-    return allItems.some(
-      (item) => item.id !== excludeId && checkCollision(itemToCheck, item)
-    );
-  };
-
   const pinchGesture = Gesture.Pinch()
     .onUpdate((e) => {
       scale.value = savedScale.value * e.scale;
@@ -81,9 +49,9 @@ export function useSeatingChartGestures({
       const y = (e.y - translateY.value) / (cellSize * scale.value);
 
       // First check chairs, then tables - prioritize chair selection
-      const chairs = furniture.filter(item => item.type === 'CHAIR');
-      const tables = furniture.filter(item => item.type === 'TABLE');
-      
+      const chairs = furniture.filter((item) => item.type === 'CHAIR');
+      const tables = furniture.filter((item) => item.type === 'TABLE');
+
       // Check for chair hits first with a slightly more generous hit area
       const hitChair = chairs.find((chair) => {
         const chairSize = chair.size / cellSize;
@@ -95,13 +63,13 @@ export function useSeatingChartGestures({
           y <= chair.y + chairSize + 0.2
         );
       });
-      
+
       if (hitChair) {
         setSelectedItemId(null);
         activeFurnitureId.value = hitChair.id;
         return;
       }
-      
+
       // Otherwise check tables with normal hit detection
       const hitTable = tables.find((table) => {
         const tableSize = table.size / cellSize;
@@ -130,7 +98,7 @@ export function useSeatingChartGestures({
               y: Math.max(0, Math.min(maxRows - 1, newY)),
             };
 
-            if (!hasCollision(potentialPosition, furniture, item.id)) {
+            if (!hasCollision(potentialPosition, furniture)) {
               return potentialPosition;
             }
             return item;
@@ -155,9 +123,9 @@ export function useSeatingChartGestures({
         const y = (e.y - translateY.value) / (cellSize * scale.value);
 
         // First check chairs, then tables - prioritize chair selection
-        const chairs = furniture.filter(item => item.type === 'CHAIR');
-        const tables = furniture.filter(item => item.type === 'TABLE');
-        
+        const chairs = furniture.filter((item) => item.type === 'CHAIR');
+        const tables = furniture.filter((item) => item.type === 'TABLE');
+
         // Check for chair hits first with a slightly more generous hit area
         const hitChair = chairs.find((chair) => {
           const chairSize = chair.size / cellSize;
@@ -169,13 +137,13 @@ export function useSeatingChartGestures({
             y <= chair.y + chairSize + 0.2
           );
         });
-        
+
         // If we hit a chair, use it
         if (hitChair) {
           onItemPress(hitChair.id);
           return;
         }
-        
+
         // Otherwise check tables with normal hit detection
         const hitTable = tables.find((table) => {
           const tableSize = table.size / cellSize;

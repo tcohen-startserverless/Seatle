@@ -91,25 +91,47 @@ export function ChairAssignmentModal({
                 )}
 
                 <ThemedText style={styles.sectionTitle}>People</ThemedText>
-                {people.map((person) => (
-                  <Pressable
-                    key={person.id}
-                    style={[styles.personItem, { borderColor }]}
-                    onPress={() =>
-                      onAssignPerson(
-                        person.id,
-                        `${person.firstName} ${person.lastName}`
-                      )
-                    }
-                  >
-                    <View style={styles.personRow}>
-                      <User size={18} color={iconColor} />
-                      <ThemedText style={styles.personName}>
-                        {person.firstName} {person.lastName}
-                      </ThemedText>
-                    </View>
-                  </Pressable>
-                ))}
+                {people.map((person) => {
+                  const assignedToSeat = furniture.some(
+                    item => item.personId === person.id && item.id !== selectedChairId
+                  );
+                  
+                  return (
+                    <Pressable
+                      key={person.id}
+                      style={[
+                        styles.personItem, 
+                        { borderColor },
+                        chair?.personId === person.id && { backgroundColor: tintColor + '20' }
+                      ]}
+                      onPress={() =>
+                        onAssignPerson(
+                          person.id,
+                          `${person.firstName} ${person.lastName}`
+                        )
+                      }
+                    >
+                      <View style={styles.personRow}>
+                        <User size={18} color={iconColor} />
+                        <View style={styles.personInfo}>
+                          <ThemedText style={styles.personName}>
+                            {person.firstName} {person.lastName}
+                          </ThemedText>
+                          {person.email && (
+                            <ThemedText style={styles.personDetail}>
+                              {person.email}
+                            </ThemedText>
+                          )}
+                        </View>
+                        {assignedToSeat && (
+                          <ThemedText style={styles.assignedBadge}>
+                            Assigned
+                          </ThemedText>
+                        )}
+                      </View>
+                    </Pressable>
+                  );
+                })}
               </View>
             )}
           </ScrollView>
@@ -176,13 +198,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    justifyContent: 'space-between',
+  },
+  personInfo: {
+    flex: 1,
   },
   personName: {
     fontSize: 14,
+    fontWeight: '500',
+  },
+  personDetail: {
+    fontSize: 12,
+    opacity: 0.7,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 12,
+  },
+  assignedBadge: {
+    fontSize: 12,
+    color: '#FF9500',
+    fontWeight: '500',
+    backgroundColor: '#FF950020',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
 });

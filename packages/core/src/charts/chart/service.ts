@@ -84,116 +84,146 @@ export namespace ChartService {
     params: Schemas.Types.Params,
     input: ChartSchemas.Types.UpdateLayoutInput
   ) => {
-    const token = `update-layout-${Date.now()}`;
+    // Track operation counts and successes
+    const operationCounts = {
+      furnitureCreated: 0,
+      furnitureUpdated: 0,
+      furnitureDeleted: 0,
+      assignmentsCreated: 0,
+      assignmentsUpdated: 0,
+      assignmentsDeleted: 0,
+      success: true
+    };
 
-    const result = await DB.transaction
-      .write(({ Chart, Furniture, Assignment }) => {
-        const operations = [];
+    // Update chart if needed
+    if (input.chart) {
+      try {
+        await DB.entities.Chart.patch({
+          userId: ctx.userId,
+          chartId: params.id,
+        })
+          .set({
+            ...input.chart,
+            updatedAt: Date.now(),
+          })
+          .go();
+      } catch (error) {
+        operationCounts.success = false;
+        console.error('Failed to update chart:', error);
+      }
+    }
 
-        if (input.chart) {
-          operations.push(
-            Chart.patch({
-              userId: ctx.userId,
-              chartId: params.id,
+    // Create furniture
+    if (input.furnitureToCreate && input.furnitureToCreate.length > 0) {
+      for (const furniture of input.furnitureToCreate) {
+        try {
+          await DB.entities.Furniture.create({
+            userId: ctx.userId,
+            chartId: params.id,
+            ...furniture,
+            updatedAt: Date.now(),
+            createdAt: Date.now(),
+          }).go();
+          operationCounts.furnitureCreated++;
+        } catch (error) {
+          console.error('Failed to create furniture:', error);
+        }
+      }
+    }
+
+    // Update furniture
+    if (input.furnitureToUpdate && input.furnitureToUpdate.length > 0) {
+      for (const { id, data } of input.furnitureToUpdate) {
+        try {
+          await DB.entities.Furniture.patch({
+            userId: ctx.userId,
+            chartId: params.id,
+            id,
+          })
+            .set({
+              ...data,
+              updatedAt: Date.now(),
             })
-              .set({
-                ...input.chart,
-                updatedAt: Date.now(),
-              })
-              .commit()
-          );
+            .go();
+          operationCounts.furnitureUpdated++;
+        } catch (error) {
+          console.error('Failed to update furniture:', error);
         }
+      }
+    }
 
-        if (input.furnitureToCreate && input.furnitureToCreate.length > 0) {
-          for (const furniture of input.furnitureToCreate) {
-            operations.push(
-              Furniture.create({
-                userId: ctx.userId,
-                chartId: params.id,
-                ...furniture,
-                updatedAt: Date.now(),
-                createdAt: Date.now(),
-              }).commit()
-            );
-          }
+    // Delete furniture
+    if (input.furnitureToDelete && input.furnitureToDelete.length > 0) {
+      for (const furnitureId of input.furnitureToDelete) {
+        try {
+          await DB.entities.Furniture.remove({
+            userId: ctx.userId,
+            chartId: params.id,
+            id: furnitureId,
+          }).go();
+          operationCounts.furnitureDeleted++;
+        } catch (error) {
+          console.error('Failed to delete furniture:', error);
         }
+      }
+    }
 
-        if (input.furnitureToUpdate && input.furnitureToUpdate.length > 0) {
-          for (const { id, data } of input.furnitureToUpdate) {
-            operations.push(
-              Furniture.patch({
-                userId: ctx.userId,
-                chartId: params.id,
-                id,
-              })
-                .set({
-                  ...data,
-                  updatedAt: Date.now(),
-                })
-                .commit()
-            );
-          }
+    // Create assignments
+    if (input.assignmentsToCreate && input.assignmentsToCreate.length > 0) {
+      for (const assignment of input.assignmentsToCreate) {
+        try {
+          await DB.entities.Assignment.create({
+            userId: ctx.userId,
+            chartId: params.id,
+            ...assignment,
+            updatedAt: Date.now(),
+            createdAt: Date.now(),
+          }).go();
+          operationCounts.assignmentsCreated++;
+        } catch (error) {
+          console.error('Failed to create assignment:', error);
         }
+      }
+    }
 
-        if (input.furnitureToDelete && input.furnitureToDelete.length > 0) {
-          for (const furnitureId of input.furnitureToDelete) {
-            operations.push(
-              Furniture.remove({
-                userId: ctx.userId,
-                chartId: params.id,
-                id: furnitureId,
-              }).commit({ response: 'all_old' })
-            );
-          }
+    // Update assignments
+    if (input.assignmentsToUpdate && input.assignmentsToUpdate.length > 0) {
+      for (const { id, personId } of input.assignmentsToUpdate) {
+        try {
+          await DB.entities.Assignment.patch({
+            userId: ctx.userId,
+            chartId: params.id,
+            id,
+          })
+            .set({
+              personId,
+              updatedAt: Date.now(),
+            })
+            .go();
+          operationCounts.assignmentsUpdated++;
+        } catch (error) {
+          console.error('Failed to update assignment:', error);
         }
+      }
+    }
 
-        if (input.assignmentsToCreate && input.assignmentsToCreate.length > 0) {
-          for (const assignment of input.assignmentsToCreate) {
-            operations.push(
-              Assignment.create({
-                userId: ctx.userId,
-                chartId: params.id,
-                ...assignment,
-                updatedAt: Date.now(),
-                createdAt: Date.now(),
-              }).commit()
-            );
-          }
+    // Delete assignments
+    if (input.assignmentsToDelete && input.assignmentsToDelete.length > 0) {
+      for (const assignmentId of input.assignmentsToDelete) {
+        try {
+          await DB.entities.Assignment.remove({
+            userId: ctx.userId,
+            chartId: params.id,
+            id: assignmentId,
+          }).go();
+          operationCounts.assignmentsDeleted++;
+        } catch (error) {
+          console.error('Failed to delete assignment:', error);
         }
+      }
+    }
 
-        if (input.assignmentsToUpdate && input.assignmentsToUpdate.length > 0) {
-          for (const { id, personId } of input.assignmentsToUpdate) {
-            operations.push(
-              Assignment.patch({
-                userId: ctx.userId,
-                chartId: params.id,
-                id,
-              })
-                .set({
-                  personId,
-                  updatedAt: Date.now(),
-                })
-                .commit()
-            );
-          }
-        }
-
-        if (input.assignmentsToDelete && input.assignmentsToDelete.length > 0) {
-          for (const assignmentId of input.assignmentsToDelete) {
-            operations.push(
-              Assignment.remove({
-                userId: ctx.userId,
-                chartId: params.id,
-                id: assignmentId,
-              }).commit({ response: 'all_old' })
-            );
-          }
-        }
-
-        return operations;
-      })
-      .go({ token });
-
+    // Fetch the updated chart data
     const updatedChart = await DB.collections
       .charts({
         userId: ctx.userId,
@@ -203,13 +233,13 @@ export namespace ChartService {
 
     return {
       transaction: {
-        success: !result.canceled,
-        furnitureCreated: input.furnitureToCreate?.length || 0,
-        furnitureUpdated: input.furnitureToUpdate?.length || 0,
-        furnitureDeleted: input.furnitureToDelete?.length || 0,
-        assignmentsCreated: input.assignmentsToCreate?.length || 0,
-        assignmentsUpdated: input.assignmentsToUpdate?.length || 0,
-        assignmentsDeleted: input.assignmentsToDelete?.length || 0,
+        success: operationCounts.success,
+        furnitureCreated: operationCounts.furnitureCreated,
+        furnitureUpdated: operationCounts.furnitureUpdated,
+        furnitureDeleted: operationCounts.furnitureDeleted,
+        assignmentsCreated: operationCounts.assignmentsCreated,
+        assignmentsUpdated: operationCounts.assignmentsUpdated,
+        assignmentsDeleted: operationCounts.assignmentsDeleted,
       },
       chart: transformChartResponse(updatedChart),
     };
