@@ -1,6 +1,6 @@
 import { api } from './api';
-import { domain } from './domain';
 import { auth } from './auth';
+import { domain } from './domain';
 
 // export const mobile = new sst.x.DevCommand('expo', {
 //   dev: {
@@ -23,6 +23,7 @@ export const web = new sst.aws.StaticSite('Web', {
     directory: 'packages/frontend',
     title: 'Seatle Web',
   },
+  path: 'packages/frontend',
   build: {
     command: 'bunx expo export web',
     output: 'web-build',
