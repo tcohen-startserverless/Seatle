@@ -11,7 +11,7 @@ import { useGetList } from '@/api/hooks/lists';
 import { FurniturePosition } from '@/types/furniture';
 import { hasCollision } from '@/utils/furnitureHelpers';
 import { FurnitureOptions } from '@/components/charts/FurnitureOptions';
-import { ChairAssignmentModal } from '@/components/charts/ChairAssignmentModal';
+import { FurnitureDetailPanel } from '@/components/charts/FurnitureDetailPanel';
 import { ChartActions } from '@/components/charts/ChartActions';
 
 export default function ChartDetailScreen() {
@@ -28,8 +28,7 @@ export default function ChartDetailScreen() {
 
   const updateLayoutMutation = useUpdateChartLayout();
 
-  const [personAssignmentVisible, setPersonAssignmentVisible] = useState(false);
-  const [selectedChairId, setSelectedChairId] = useState<string | null>(null);
+  const [selectedFurniture, setSelectedFurniture] = useState<FurniturePosition | null>(null);
   const backgroundColor = useThemeColor({}, 'background');
 
   const {
@@ -134,44 +133,42 @@ export default function ChartDetailScreen() {
     setFurniture([...furniture, newItem]);
   };
 
-  const handleChairClick = (chairId: string) => {
-    setSelectedChairId(chairId);
-    setPersonAssignmentVisible(true);
+  const handleFurnitureClick = (furnitureId: string) => {
+    const selectedItem = furniture.find(item => item.id === furnitureId);
+    setSelectedFurniture(prev => prev?.id === furnitureId ? null : selectedItem || null);
   };
 
   const assignPersonToChair = (personId: string, personName: string) => {
-    if (!selectedChairId) return;
+    if (!selectedFurniture) return;
 
     setFurniture((prev) =>
       prev.map((item) =>
-        item.id === selectedChairId ? { ...item, personId, personName } : item
+        item.id === selectedFurniture.id ? { ...item, personId, personName } : item
       )
     );
 
     setAssignments((prev) => {
-      const currentAssignment = prev[selectedChairId];
+      const currentAssignment = prev[selectedFurniture.id];
       if (currentAssignment) {
         return {
           ...prev,
-          [selectedChairId]: { ...currentAssignment, personId },
+          [selectedFurniture.id]: { ...currentAssignment, personId },
         };
       } else {
         return {
           ...prev,
-          [selectedChairId]: { id: `temp-${Date.now()}`, personId },
+          [selectedFurniture.id]: { id: `temp-${Date.now()}`, personId },
         };
       }
     });
-
-    setPersonAssignmentVisible(false);
   };
 
   const removePersonFromChair = () => {
-    if (!selectedChairId) return;
+    if (!selectedFurniture || selectedFurniture.type !== 'CHAIR') return;
 
     setFurniture((prev) =>
       prev.map((item) =>
-        item.id === selectedChairId
+        item.id === selectedFurniture.id
           ? { ...item, personId: undefined, personName: undefined }
           : item
       )
@@ -179,11 +176,27 @@ export default function ChartDetailScreen() {
 
     setAssignments((prev) => {
       const newAssignments = { ...prev };
-      delete newAssignments[selectedChairId];
+      delete newAssignments[selectedFurniture.id];
       return newAssignments;
     });
-
-    setPersonAssignmentVisible(false);
+  };
+  
+  const handleDeleteFurniture = (furnitureId: string) => {
+    Alert.alert(
+      'Delete Item',
+      'Are you sure you want to delete this item?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            setFurniture(prev => prev.filter(item => item.id !== furnitureId));
+            setSelectedFurniture(null);
+          },
+        },
+      ]
+    );
   };
 
   const handleSaveLayout = async () => {
@@ -297,6 +310,10 @@ export default function ChartDetailScreen() {
     }
   };
 
+  const closeFurniturePanel = () => {
+    setSelectedFurniture(null);
+  };
+
   if (isLoading || !id) {
     return (
       <ThemedView style={styles.container}>
@@ -345,24 +362,23 @@ export default function ChartDetailScreen() {
             onFurnitureUpdate={(updatedFurniture) => {
               setFurniture(updatedFurniture);
             }}
-            onChairAssign={handleChairClick}
+            onFurnitureSelect={handleFurnitureClick}
             edgePadding={32}
           />
         </View>
+        
+        {selectedFurniture && (
+          <FurnitureDetailPanel
+            selectedFurniture={selectedFurniture}
+            onClose={closeFurniturePanel}
+            onDelete={handleDeleteFurniture}
+            people={listData?.people}
+            onAssignPerson={assignPersonToChair}
+            onRemovePerson={removePersonFromChair}
+            isLoading={listLoading}
+          />
+        )}
       </View>
-
-      <ChairAssignmentModal
-        visible={personAssignmentVisible}
-        onClose={() => setPersonAssignmentVisible(false)}
-        selectedChairId={selectedChairId}
-        furniture={furniture}
-        listId={chartData.listId}
-        isLoading={listLoading}
-        error={listError}
-        people={listData?.people}
-        onAssignPerson={assignPersonToChair}
-        onRemovePerson={removePersonFromChair}
-      />
     </ThemedView>
   );
 }

@@ -1,25 +1,13 @@
 import { StyleSheet, View, Pressable } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Square, Circle } from 'lucide-react';
-import { FurnitureType } from '@/types/furniture';
+import { FurnitureType, TABLE_SIZES, CHAIR_SIZES } from '@/types/furniture';
 
 interface FurnitureOptionsProps {
   onAddFurniture: (size: number, type: FurnitureType) => void;
 }
 
 export function FurnitureOptions({ onAddFurniture }: FurnitureOptionsProps) {
-  const TABLE_SIZES = [
-    { id: '1x1', size: 25, label: '1x1', type: 'TABLE' as FurnitureType },
-    { id: '2x2', size: 50, label: '2x2', type: 'TABLE' as FurnitureType },
-    { id: '3x3', size: 75, label: '3x3', type: 'TABLE' as FurnitureType },
-  ];
-
-  const CHAIR_SIZES = [
-    { id: 'chair-small', size: 15, label: 'Small', type: 'CHAIR' as FurnitureType },
-    { id: 'chair-medium', size: 20, label: 'Medium', type: 'CHAIR' as FurnitureType },
-    { id: 'chair-large', size: 25, label: 'Large', type: 'CHAIR' as FurnitureType },
-  ];
-
   return (
     <View style={styles.container}>
       <View style={styles.furnitureSection}>
@@ -39,7 +27,6 @@ export function FurnitureOptions({ onAddFurniture }: FurnitureOptionsProps) {
                   strokeWidth={1}
                 />
               </View>
-              <ThemedText style={styles.furnitureLabel}>{table.label}</ThemedText>
             </Pressable>
           ))}
         </View>
@@ -55,14 +42,8 @@ export function FurnitureOptions({ onAddFurniture }: FurnitureOptionsProps) {
               onPress={() => onAddFurniture(chair.size, chair.type)}
             >
               <View style={styles.furniturePreview}>
-                <Circle
-                  size={chair.size / 2}
-                  color="#444"
-                  fill="#444"
-                  strokeWidth={1}
-                />
+                <Circle size={chair.size / 2} color="#444" fill="#444" strokeWidth={1} />
               </View>
-              <ThemedText style={styles.furnitureLabel}>{chair.label}</ThemedText>
             </Pressable>
           ))}
         </View>

@@ -19,3 +19,17 @@ export interface Person {
   phone?: string;
   notes?: string;
 }
+
+export interface FurnitureSizeItem {
+  id: string;
+  size: number;
+  type: FurnitureType;
+}
+
+export const TABLE_SIZES: FurnitureSizeItem[] = [
+  { id: 'table', size: 75, type: 'TABLE' },
+];
+
+export const CHAIR_SIZES: FurnitureSizeItem[] = [
+  { id: 'chair', size: 25, type: 'CHAIR' },
+];

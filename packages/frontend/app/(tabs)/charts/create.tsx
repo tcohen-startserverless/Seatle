@@ -1,11 +1,11 @@
-import { StyleSheet, View, TextInput, ScrollView, Modal, Alert } from 'react-native';
+import { StyleSheet, View, TextInput, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { Pressable } from 'react-native';
 import { useThemeColor } from '@/theme';
 import { FloorPlanEditor } from '@/components/FloorPlanEditor';
-import { ArrowLeft, Square, Circle, Save, X } from 'lucide-react';
+import { ArrowLeft, Square, Circle, Save } from 'lucide-react';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import { useState } from 'react';
 import { FurniturePosition } from '@/components/FloorPlanEditor/types';
@@ -15,6 +15,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useBulkCreateFurniture } from '@/api/hooks/furniture';
 import { useCreateAssignment } from '@/api/hooks/assignments';
 import { hasCollision } from '@/utils/furnitureHelpers';
+import { TABLE_SIZES, CHAIR_SIZES } from '@/types/furniture';
+import { FurnitureDetailPanel } from '@/components/charts/FurnitureDetailPanel';
 
 type FurnitureType = 'TABLE' | 'CHAIR';
 
@@ -22,18 +24,6 @@ type CustomFurniturePosition = FurniturePosition & {
   personId?: string;
   personName?: string;
 };
-
-const TABLE_SIZES = [
-  { id: '1x1', size: 25, label: '1x1', type: 'TABLE' as const },
-  { id: '2x2', size: 50, label: '2x2', type: 'TABLE' as const },
-  { id: '3x3', size: 75, label: '3x3', type: 'TABLE' as const },
-];
-
-const CHAIR_SIZES = [
-  { id: 'chair-small', size: 15, label: 'Small', type: 'CHAIR' as const },
-  { id: 'chair-medium', size: 20, label: 'Medium', type: 'CHAIR' as const },
-  { id: 'chair-large', size: 25, label: 'Large', type: 'CHAIR' as const },
-];
 
 export default function CreateClassScreen() {
   const router = useRouter();
@@ -51,8 +41,7 @@ export default function CreateClassScreen() {
 
   const [selectedListId, setSelectedListId] = useState<string>('');
 
-  const [personAssignmentVisible, setPersonAssignmentVisible] = useState(false);
-  const [selectedChairId, setSelectedChairId] = useState<string | null>(null);
+  const [selectedFurniture, setSelectedFurniture] = useState<FurniturePosition | null>(null);
 
   const { data: listsData } = useListLists();
 
@@ -86,18 +75,49 @@ export default function CreateClassScreen() {
     setFurniture([...furniture, newItem]);
   };
 
-  const handleChairClick = (chairId: string) => {
-    setSelectedChairId(chairId);
-    setPersonAssignmentVisible(true);
+  const handleFurnitureClick = (furnitureId: string) => {
+    const selectedItem = furniture.find(item => item.id === furnitureId);
+    setSelectedFurniture(prev => prev?.id === furnitureId ? null : selectedItem || null);
   };
 
   const assignPersonToChair = (personId: string, personName: string) => {
+    if (!selectedFurniture || selectedFurniture.type !== 'CHAIR') return;
+    
     setFurniture((prev) =>
       prev.map((item) =>
-        item.id === selectedChairId ? { ...item, personId, personName } : item
+        item.id === selectedFurniture.id ? { ...item, personId, personName } : item
       )
     );
-    setPersonAssignmentVisible(false);
+  };
+  
+  const removePersonFromChair = () => {
+    if (!selectedFurniture || selectedFurniture.type !== 'CHAIR') return;
+
+    setFurniture((prev) =>
+      prev.map((item) =>
+        item.id === selectedFurniture.id
+          ? { ...item, personId: undefined, personName: undefined }
+          : item
+      )
+    );
+  };
+  
+  const handleDeleteFurniture = (furnitureId: string) => {
+    Alert.alert(
+      'Delete Item',
+      'Are you sure you want to delete this item?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            setFurniture(prev => prev.filter(item => item.id !== furnitureId));
+            setSelectedFurniture(null);
+          },
+        },
+      ]
+    );
   };
 
   const selectList = (listId: string) => {
@@ -122,7 +142,6 @@ export default function CreateClassScreen() {
             >
               <Square size={table.size} color="#8B4513" fill="#8B4513" strokeWidth={1} />
             </View>
-            <ThemedText style={styles.furnitureLabel}>{table.label}</ThemedText>
           </Pressable>
         ))}
       </View>
@@ -143,7 +162,6 @@ export default function CreateClassScreen() {
             >
               <Circle size={chair.size} color="#444" fill="#444" strokeWidth={1} />
             </View>
-            <ThemedText style={styles.furnitureLabel}>{chair.label}</ThemedText>
           </Pressable>
         ))}
       </View>
@@ -311,111 +329,32 @@ export default function CreateClassScreen() {
               setFurniture(updatedFurniture as CustomFurniturePosition[]);
             }}
             edgePadding={32}
-            onChairAssign={handleChairClick}
+            onFurnitureSelect={handleFurnitureClick}
           />
 
-          {/* Show chair positions as interactive elements */}
-          {furniture
-            .filter((item) => item.type === 'CHAIR')
-            .map((chair) => (
-              <Pressable
-                key={chair.id}
-                style={[
-                  styles.chairOverlay,
-                  {
-                    left: chair.x * 5,
-                    top: chair.y * 5,
-                    width: chair.size,
-                    height: chair.size,
-                    backgroundColor: chair.personId ? '#4CAF50' : '#444',
-                  },
-                ]}
-                onPress={() => handleChairClick(chair.id)}
-                onLongPress={() => {
-                  // Implement actual chair dragging functionality
-                  const updatedFurniture = [...furniture];
-                  const chairIndex = updatedFurniture.findIndex(
-                    (item) => item.id === chair.id
-                  );
-
-                  if (chairIndex !== -1) {
-                    // Move the chair to a new position to demonstrate movement
-                    const newX = Math.max(0, chair.x + 2);
-                    const newY = Math.max(0, chair.y + 2);
-
-                    // Make sure we preserve all required properties with their proper types
-                    updatedFurniture[chairIndex] = {
-                      ...updatedFurniture[chairIndex],
-                      id: chair.id, // Ensure id is explicitly set
-                      x: newX,
-                      y: newY,
-                      size: chair.size,
-                      type: 'CHAIR' as const,
-                      cells: chair.cells || 1,
-                    };
-
-                    setFurniture(updatedFurniture);
-                  }
-                }}
-              >
-                {chair.personName && (
-                  <ThemedText style={styles.personName} numberOfLines={1}>
-                    {chair.personName}
-                  </ThemedText>
-                )}
-              </Pressable>
-            ))}
         </View>
+        
+        {selectedFurniture && (
+          <FurnitureDetailPanel
+            selectedFurniture={selectedFurniture}
+            onClose={() => setSelectedFurniture(null)}
+            onDelete={handleDeleteFurniture}
+            people={listsData?.data && selectedListId ? 
+              // Create sample people for demonstration
+              [1, 2, 3].map(i => ({
+                id: `person-${i}`,
+                firstName: `Person`,
+                lastName: `${i}`,
+              })) : 
+              undefined}
+            onAssignPerson={assignPersonToChair}
+            onRemovePerson={removePersonFromChair}
+            isLoading={false}
+          />
+        )}
       </View>
 
-      <Modal
-        visible={personAssignmentVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setPersonAssignmentVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContainer, { backgroundColor }]}>
-            <View style={styles.modalHeader}>
-              <ThemedText type="subtitle">Assign Person to Seat</ThemedText>
-              <Pressable onPress={() => setPersonAssignmentVisible(false)}>
-                <X size={24} color={iconColor} />
-              </Pressable>
-            </View>
 
-            <ScrollView style={styles.modalContent}>
-              {!selectedListId ? (
-                <ThemedText>Please select a list to assign people</ThemedText>
-              ) : !listsData?.data ? (
-                <ThemedText>Loading people...</ThemedText>
-              ) : (
-                listsData.data
-                  .filter((list) => list.id === selectedListId)
-                  .map((list) => (
-                    <View key={list.id} style={styles.listPeopleContainer}>
-                      <ThemedText type="subtitle">{list.name}</ThemedText>
-                      {/* Create sample people for demonstration */}
-                      {[1, 2, 3].map((i) => (
-                        <Pressable
-                          key={`person-${list.id}-${i}`}
-                          style={[styles.personItem, { borderColor }]}
-                          onPress={() =>
-                            assignPersonToChair(
-                              `person-${i}`,
-                              `Person ${i} from ${list.name}`
-                            )
-                          }
-                        >
-                          <ThemedText>{`Person ${i} from ${list.name}`}</ThemedText>
-                        </Pressable>
-                      ))}
-                    </View>
-                  ))
-              )}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
     </ThemedView>
   );
 }
@@ -508,49 +447,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
   },
-  chairOverlay: {
-    position: 'absolute',
-    borderRadius: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  personName: {
-    fontSize: 10,
-    color: 'white',
-    textAlign: 'center',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContainer: {
-    width: '80%',
-    maxWidth: 500,
-    maxHeight: '80%',
-    borderRadius: 12,
-    overflow: 'hidden',
-    padding: 20,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  modalContent: {
-    flex: 1,
-  },
-  listPeopleContainer: {
-    marginBottom: 16,
-    gap: 8,
-  },
-  personItem: {
-    padding: 12,
-    borderWidth: 1,
-    borderRadius: 8,
-    marginVertical: 4,
-  },
+
+
 });

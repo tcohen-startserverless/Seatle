@@ -16,6 +16,7 @@ export function FloorPlanEditor({
   furniture,
   onFurnitureUpdate,
   onChairAssign,
+  onFurnitureSelect,
 }: SeatingChartProps) {
   const borderColor = useThemeColor({}, 'border');
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -46,12 +47,7 @@ export function FloorPlanEditor({
     setSelectedItemId(itemId === selectedItemId ? null : itemId);
   };
 
-  const handleDeleteItem = (itemId: string, e: GestureResponderEvent) => {
-    e.stopPropagation();
-    setSelectedItemId(null);
-    const updatedFurniture = furniture.filter((item) => item.id !== itemId);
-    onFurnitureUpdate?.(updatedFurniture);
-  };
+  // Delete functionality moved to side panel
 
   const measureViewport = () => {
     viewportRef.current?.measure((_, __, width, height) => {
@@ -120,8 +116,8 @@ export function FloorPlanEditor({
                   selectedItemId={selectedItemId}
                   cellSize={cellSize}
                   onItemPress={handleItemPress}
-                  onDeleteItem={handleDeleteItem}
                   onChairAssign={onChairAssign}
+                  onFurnitureSelect={onFurnitureSelect}
                 />
               </View>
             </Animated.View>

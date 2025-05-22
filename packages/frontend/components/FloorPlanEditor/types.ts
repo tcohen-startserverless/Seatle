@@ -26,6 +26,7 @@ export interface SeatingChartProps {
   furniture: FurniturePosition[];
   onFurnitureUpdate: (furniture: FurniturePosition[]) => void;
   onChairAssign?: (chairId: string) => void;
+  onFurnitureSelect?: (furnitureId: string) => void;
 }
 
 export interface FurnitureElementsProps {
@@ -33,6 +34,6 @@ export interface FurnitureElementsProps {
   selectedItemId: string | null;
   cellSize: number;
   onItemPress: (id: string) => void;
-  onDeleteItem: (id: string, e: GestureResponderEvent) => void;
   onChairAssign?: (chairId: string) => void;
+  onFurnitureSelect?: (furnitureId: string) => void;
 }

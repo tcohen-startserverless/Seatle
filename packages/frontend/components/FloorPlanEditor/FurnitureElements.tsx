@@ -1,11 +1,10 @@
 import {
   Animated,
-  GestureResponderEvent,
   Pressable,
   StyleSheet,
   View,
 } from 'react-native';
-import { Square, Trash2, Circle } from 'lucide-react';
+import { Square, Circle } from 'lucide-react';
 import { FurnitureElementsProps, FurniturePosition } from './types';
 import { ThemedText } from '@/components/ThemedText';
 
@@ -14,8 +13,8 @@ export function FurnitureElements({
   selectedItemId,
   cellSize,
   onItemPress,
-  onDeleteItem,
   onChairAssign,
+  onFurnitureSelect,
 }: FurnitureElementsProps) {
   return (
     <>
@@ -36,23 +35,17 @@ export function FurnitureElements({
               },
             ]}
           >
-            <Pressable onPress={() => onItemPress(item.id)} style={styles.itemWrapper}>
+            <Pressable 
+              onPress={() => {
+                if (onFurnitureSelect) {
+                  onFurnitureSelect(item.id);
+                } else {
+                  onItemPress(item.id);
+                }
+              }} 
+              style={styles.itemWrapper}>
               <Square size={item.size} color="#8B4513" fill="#8B4513" strokeWidth={1} />
             </Pressable>
-            {selectedItemId === item.id && (
-              <Pressable
-                style={styles.deleteButton}
-                onPressIn={(e) => {
-                  e.stopPropagation();
-                  onDeleteItem(item.id, e);
-                }}
-                hitSlop={15}
-              >
-                <View style={styles.deleteButtonInner}>
-                  <Trash2 size={20} color="red" />
-                </View>
-              </Pressable>
-            )}
           </Animated.View>
         ))}
         
@@ -75,11 +68,13 @@ export function FurnitureElements({
           >
             <Pressable 
               onPress={() => {
-                // If we have an assignment handler, call it for chair assignment
-                if (onChairAssign) {
+                if (onFurnitureSelect) {
+                  onFurnitureSelect(item.id);
+                }
+                else if (onChairAssign) {
                   onChairAssign(item.id);
                 } else {
-                  // Otherwise use regular item press handler
+
                   onItemPress(item.id);
                 }
               }} 
@@ -124,20 +119,6 @@ export function FurnitureElements({
                 )}
               </View>
             </Pressable>
-            {selectedItemId === item.id && (
-              <Pressable
-                style={styles.deleteButton}
-                onPressIn={(e) => {
-                  e.stopPropagation();
-                  onDeleteItem(item.id, e);
-                }}
-                hitSlop={15}
-              >
-                <View style={styles.deleteButtonInner}>
-                  <Trash2 size={20} color="red" />
-                </View>
-              </Pressable>
-            )}
           </Animated.View>
         ))}
     </>
@@ -176,25 +157,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 2,
   },
-  deleteButton: {
-    position: 'absolute',
-    top: -30,
-    right: -30,
-    zIndex: 100,
-    elevation: 6,
-  },
-  deleteButtonInner: {
-    padding: 8,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    zIndex: 101,
-  },
+
 });
