@@ -179,6 +179,11 @@ export default function ChartDetailScreen() {
       delete newAssignments[selectedFurniture.id];
       return newAssignments;
     });
+    setSelectedFurniture({
+      ...selectedFurniture,
+      personId: undefined,
+      personName: undefined
+    });
   };
   
   const handleDeleteFurniture = (furnitureId: string) => {

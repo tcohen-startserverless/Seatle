@@ -100,6 +100,11 @@ export default function CreateClassScreen() {
           : item
       )
     );
+    setSelectedFurniture({
+      ...selectedFurniture,
+      personId: undefined,
+      personName: undefined
+    });
   };
   
   const handleDeleteFurniture = (furnitureId: string) => {
