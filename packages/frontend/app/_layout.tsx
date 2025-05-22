@@ -16,7 +16,7 @@ export default function RootLayout() {
               <RestoreLoadingIndicator />
               <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="auth/login" options={{ title: 'Login' }} />
+                <Stack.Screen name="auth" options={{ headerShown: false }} />
                 <Stack.Screen name="callback" options={{ title: 'Authenticating...' }} />
               </Stack>
             </>
