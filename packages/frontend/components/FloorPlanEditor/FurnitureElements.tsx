@@ -5,8 +5,9 @@ import {
   View,
 } from 'react-native';
 import { Square, Circle } from 'lucide-react';
-import { FurnitureElementsProps, FurniturePosition } from './types';
+import { FurnitureElementsProps } from './types';
 import { ThemedText } from '@/components/ThemedText';
+import { getInitialsFromFullName } from '@/utils/nameHelpers';
 
 export function FurnitureElements({
   furniture,
@@ -106,7 +107,7 @@ export function FurnitureElements({
                     style={[
                       styles.personName, 
                       { 
-                        fontSize: item.size > 20 ? 10 : 8,
+                        fontSize: item.size > 20 ? 12 : 10,
                         textShadowColor: 'rgba(0,0,0,0.7)',
                         textShadowOffset: { width: 0, height: 1 },
                         textShadowRadius: 1,
@@ -114,7 +115,7 @@ export function FurnitureElements({
                     ]} 
                     numberOfLines={1}
                   >
-                    {item.personName}
+                    {getInitialsFromFullName(item.personName)}
                   </ThemedText>
                 )}
               </View>

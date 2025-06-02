@@ -9,7 +9,7 @@ import { ArrowLeft, Square, Circle, Save } from 'lucide-react';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import { useState } from 'react';
 import { FurniturePosition } from '@/components/FloorPlanEditor/types';
-import { useListLists } from '@/api/hooks/lists';
+import { useListLists, useGetList } from '@/api/hooks/lists';
 import { useCreateChart } from '@/api/hooks/charts';
 import { useAuth } from '@/hooks/useAuth';
 import { useBulkCreateFurniture } from '@/api/hooks/furniture';
@@ -44,6 +44,13 @@ export default function CreateClassScreen() {
   const [selectedFurniture, setSelectedFurniture] = useState<FurniturePosition | null>(null);
 
   const { data: listsData } = useListLists();
+  
+  const {
+    data: selectedListData,
+    isLoading: selectedListLoading,
+  } = useGetList({
+    id: selectedListId || '',
+  });
 
   const handleFurnitureSelect = (size: number, type: FurnitureType) => {
     const newItem: FurniturePosition = {
@@ -84,10 +91,22 @@ export default function CreateClassScreen() {
     if (!selectedFurniture || selectedFurniture.type !== 'CHAIR') return;
     
     setFurniture((prev) =>
-      prev.map((item) =>
-        item.id === selectedFurniture.id ? { ...item, personId, personName } : item
-      )
+      prev.map((item) => {
+        if (item.personId === personId && item.id !== selectedFurniture.id) {
+          return { ...item, personId: undefined, personName: undefined };
+        }
+        if (item.id === selectedFurniture.id) {
+          return { ...item, personId, personName };
+        }
+        return item;
+      })
     );
+
+    setSelectedFurniture({
+      ...selectedFurniture,
+      personId,
+      personName
+    });
   };
   
   const removePersonFromChair = () => {
@@ -344,17 +363,10 @@ export default function CreateClassScreen() {
             selectedFurniture={selectedFurniture}
             onClose={() => setSelectedFurniture(null)}
             onDelete={handleDeleteFurniture}
-            people={listsData?.data && selectedListId ? 
-              // Create sample people for demonstration
-              [1, 2, 3].map(i => ({
-                id: `person-${i}`,
-                firstName: `Person`,
-                lastName: `${i}`,
-              })) : 
-              undefined}
+            people={selectedListData?.people}
             onAssignPerson={assignPersonToChair}
             onRemovePerson={removePersonFromChair}
-            isLoading={false}
+            isLoading={selectedListLoading}
           />
         )}
       </View>

@@ -142,24 +142,40 @@ export default function ChartDetailScreen() {
     if (!selectedFurniture) return;
 
     setFurniture((prev) =>
-      prev.map((item) =>
-        item.id === selectedFurniture.id ? { ...item, personId, personName } : item
-      )
+      prev.map((item) => {
+        if (item.personId === personId && item.id !== selectedFurniture.id) {
+          return { ...item, personId: undefined, personName: undefined };
+        }
+        if (item.id === selectedFurniture.id) {
+          return { ...item, personId, personName };
+        }
+        return item;
+      })
     );
 
     setAssignments((prev) => {
-      const currentAssignment = prev[selectedFurniture.id];
+      const newAssignments = { ...prev };
+      
+      Object.keys(newAssignments).forEach(furnitureId => {
+        if (newAssignments[furnitureId]?.personId === personId && furnitureId !== selectedFurniture.id) {
+          delete newAssignments[furnitureId];
+        }
+      });
+      
+      const currentAssignment = newAssignments[selectedFurniture.id];
       if (currentAssignment) {
-        return {
-          ...prev,
-          [selectedFurniture.id]: { ...currentAssignment, personId },
-        };
+        newAssignments[selectedFurniture.id] = { ...currentAssignment, personId };
       } else {
-        return {
-          ...prev,
-          [selectedFurniture.id]: { id: `temp-${Date.now()}`, personId },
-        };
+        newAssignments[selectedFurniture.id] = { id: `temp-${Date.now()}`, personId };
       }
+      
+      return newAssignments;
+    });
+
+    setSelectedFurniture({
+      ...selectedFurniture,
+      personId,
+      personName
     });
   };
 
