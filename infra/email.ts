@@ -1,7 +1,7 @@
 import { domain, zone } from './domain';
 
 export const email = new sst.aws.Email('email', {
-  sender: domain ? domain : 'trevor.cohen@startserverless.dev',
+  sender: domain ? `email.${domain}` : 'trevor.cohen@startserverless.dev',
   dns: zone
     ? sst.aws.dns({
         zone: zone?.id,
