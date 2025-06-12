@@ -1,5 +1,5 @@
-import { render } from '@react-email/components';
 import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
+import { render } from '@react-email/components';
 import { Resource } from 'sst';
 
 type SendEmailOptions = {
@@ -16,7 +16,7 @@ export namespace EmailService {
     to,
     subject,
     react,
-    from = Resource.email.sender,
+    from = `noreply@${Resource.email.sender}`,
   }: SendEmailOptions) => {
     const html = await render(react);
     const toAddresses = Array.isArray(to) ? to : [to];

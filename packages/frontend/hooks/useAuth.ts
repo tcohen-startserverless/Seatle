@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { openAuthClient, AuthStorage, getCurrentUser, UserSubject } from '@/auth/client';
+import { AuthStorage, getCurrentUser, openAuthClient, UserSubject } from '@/auth/client';
+import { useEffect, useState } from 'react';
 
-const authEvents = new EventTarget();
+export const authEvents = new EventTarget();
 export const AUTH_CHANGED = 'auth_changed';
 
 export const notifyAuthChange = () => {

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { hc } from 'hono/client';
 import type { App } from '@functions/api';
 import { AuthStorage } from '../auth/client';
+import { AUTH_CHANGED, authEvents } from '../hooks/useAuth';
 
 type ApiClientType = ReturnType<typeof hc<App>>;
 
@@ -33,15 +34,20 @@ export const ApiClientProvider: React.FC<ApiClientProviderProps> = ({ children }
       try {
         const tokens = await AuthStorage.getTokens();
         if (!tokens.access) {
-          throw new Error('No access token found');
+          setState({
+            client: null,
+            isLoading: false,
+            error: null,
+          });
+          return;
         }
-        
+
         const apiClient = hc<App>(process.env.EXPO_PUBLIC_API_URL, {
           headers: {
             Authorization: `Bearer ${tokens.access}`,
           },
         });
-        
+
         setState({
           client: apiClient,
           isLoading: false,
@@ -51,32 +57,39 @@ export const ApiClientProvider: React.FC<ApiClientProviderProps> = ({ children }
         setState({
           client: null,
           isLoading: false,
-          error: error instanceof Error ? error : new Error('Failed to initialize API client'),
+          error:
+            error instanceof Error ? error : new Error('Failed to initialize API client'),
         });
       }
     };
 
+    const handleAuthChange = () => {
+      setState((prev) => ({ ...prev, isLoading: true }));
+      initClient();
+    };
+
+    authEvents.addEventListener(AUTH_CHANGED, handleAuthChange);
     initClient();
+
+    return () => {
+      authEvents.removeEventListener(AUTH_CHANGED, handleAuthChange);
+    };
   }, []);
 
-  return (
-    <ApiClientContext.Provider value={state}>
-      {children}
-    </ApiClientContext.Provider>
-  );
+  return <ApiClientContext.Provider value={state}>{children}</ApiClientContext.Provider>;
 };
 
 export const useApiClient = () => {
   const context = useContext(ApiClientContext);
-  
+
   if (context === undefined) {
     throw new Error('useApiClient must be used within an ApiClientProvider');
   }
-  
+
   if (context.error) {
     throw context.error;
   }
-  
+
   return {
     client: context.client,
     isLoading: context.isLoading,
