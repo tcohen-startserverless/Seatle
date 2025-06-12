@@ -1,15 +1,15 @@
-import { issuer } from '@openauthjs/openauth';
-import { handle } from 'hono/aws-lambda';
-import { Resource } from 'sst';
+import { subjects } from '@core/auth/subjects';
 import { EmailService } from '@core/email/service';
 import CodeEmail from '@core/email/templates/code';
+import { UserService } from '@core/user';
+import { issuer } from '@openauthjs/openauth';
 import { CodeProvider } from '@openauthjs/openauth/provider/code';
 import { CodeUI } from '@openauthjs/openauth/ui/code';
-import { DynamoStorage } from '@openauthjs/openauth/storage/dynamo';
-import { subjects } from '@core/auth/subjects';
-import { UserService } from '@core/user';
+import { handle } from 'hono/aws-lambda';
+import { seaterTheme } from './theme';
 
 const app = issuer({
+  theme: seaterTheme,
   allow: async (req) => {
     return true;
   },
@@ -17,14 +17,17 @@ const app = issuer({
     code: CodeProvider(
       CodeUI({
         copy: {
-          code_info: "We'll send a verification code to your email",
-          email_placeholder: 'Enter your email',
-          button_continue: 'Continue',
-          code_placeholder: 'Enter verification code',
-          code_sent: 'Code sent to your email',
-          code_resent: 'Code resent to your email',
-          code_didnt_get: "Didn't receive a code?",
-          code_resend: 'Resend code',
+          code_info:
+            "We'll send a secure verification code to your email to access your Seater account",
+          email_placeholder: 'Enter your email address',
+          button_continue: 'Continue to Seater',
+          code_placeholder: 'Enter 6-digit code',
+          code_sent: 'Verification code sent to',
+          code_resent: 'New code sent to',
+          code_didnt_get: "Didn't receive your code?",
+          code_resend: 'Send new code',
+          email_invalid: 'Please enter a valid email address',
+          code_invalid: 'Invalid code. Please try again.',
         },
         sendCode: async (claims, code) => {
           try {

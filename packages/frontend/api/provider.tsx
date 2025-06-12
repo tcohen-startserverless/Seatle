@@ -3,6 +3,7 @@ import { hc } from 'hono/client';
 import type { App } from '@functions/api';
 import { AuthStorage } from '../auth/client';
 import { AUTH_CHANGED, authEvents } from '../hooks/useAuth';
+import { useThemeListener } from '../theme/context';
 
 type ApiClientType = ReturnType<typeof hc<App>>;
 
@@ -27,6 +28,13 @@ export const ApiClientProvider: React.FC<ApiClientProviderProps> = ({ children }
     client: null,
     isLoading: true,
     error: null,
+  });
+
+  // Force re-render on theme changes for immediate UI updates
+  const [, forceUpdate] = useState({});
+
+  useThemeListener(() => {
+    forceUpdate({});
   });
 
   useEffect(() => {
