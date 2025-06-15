@@ -6,6 +6,7 @@ import { useAuthContext } from '@/context/AuthContext';
 import { ProfileMenu } from '@/components/ProfileMenu';
 import { User } from 'lucide-react';
 import { useThemeColor, useSpacing, useTypography } from '@/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const { user } = useAuthContext();
@@ -13,9 +14,20 @@ export default function HomeScreen() {
   const spacing = useSpacing();
   const typography = useTypography();
   const iconColor = useThemeColor({}, 'text');
+  const insets = useSafeAreaInsets();
 
   return (
-    <ThemedView style={[styles.container, { padding: spacing.md }]}>
+    <ThemedView
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top + spacing.md,
+          paddingLeft: insets.left + spacing.md,
+          paddingRight: insets.right + spacing.md,
+          paddingBottom: insets.bottom + spacing.md,
+        },
+      ]}
+    >
       <View style={[styles.header, { marginBottom: spacing.lg }]}>
         <ThemedText type="title">Home</ThemedText>
 
@@ -28,7 +40,15 @@ export default function HomeScreen() {
       </View>
 
       {showMenu && (
-        <View style={[styles.menuContainer, { top: spacing['3xl'], right: spacing.md }]}>
+        <View
+          style={[
+            styles.menuContainer,
+            {
+              top: spacing['3xl'],
+              right: insets.right + spacing.md,
+            },
+          ]}
+        >
           <ProfileMenu />
         </View>
       )}

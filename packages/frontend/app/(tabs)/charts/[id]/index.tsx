@@ -13,12 +13,14 @@ import { hasCollision } from '@/utils/furnitureHelpers';
 import { FurnitureOptions } from '@/components/charts/FurnitureOptions';
 import { FurnitureDetailPanel } from '@/components/charts/FurnitureDetailPanel';
 import { ChartActions } from '@/components/charts/ChartActions';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ChartDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const tintColor = useThemeColor({}, 'tint');
   const iconColor = useThemeColor({}, 'text');
+  const insets = useSafeAreaInsets();
 
   const {
     data: chartData,
@@ -28,7 +30,9 @@ export default function ChartDetailScreen() {
 
   const updateLayoutMutation = useUpdateChartLayout();
 
-  const [selectedFurniture, setSelectedFurniture] = useState<FurniturePosition | null>(null);
+  const [selectedFurniture, setSelectedFurniture] = useState<FurniturePosition | null>(
+    null
+  );
   const backgroundColor = useThemeColor({}, 'background');
 
   const {
@@ -134,8 +138,10 @@ export default function ChartDetailScreen() {
   };
 
   const handleFurnitureClick = (furnitureId: string) => {
-    const selectedItem = furniture.find(item => item.id === furnitureId);
-    setSelectedFurniture(prev => prev?.id === furnitureId ? null : selectedItem || null);
+    const selectedItem = furniture.find((item) => item.id === furnitureId);
+    setSelectedFurniture((prev) =>
+      prev?.id === furnitureId ? null : selectedItem || null
+    );
   };
 
   const assignPersonToChair = (personId: string, personName: string) => {
@@ -155,27 +161,30 @@ export default function ChartDetailScreen() {
 
     setAssignments((prev) => {
       const newAssignments = { ...prev };
-      
-      Object.keys(newAssignments).forEach(furnitureId => {
-        if (newAssignments[furnitureId]?.personId === personId && furnitureId !== selectedFurniture.id) {
+
+      Object.keys(newAssignments).forEach((furnitureId) => {
+        if (
+          newAssignments[furnitureId]?.personId === personId &&
+          furnitureId !== selectedFurniture.id
+        ) {
           delete newAssignments[furnitureId];
         }
       });
-      
+
       const currentAssignment = newAssignments[selectedFurniture.id];
       if (currentAssignment) {
         newAssignments[selectedFurniture.id] = { ...currentAssignment, personId };
       } else {
         newAssignments[selectedFurniture.id] = { id: `temp-${Date.now()}`, personId };
       }
-      
+
       return newAssignments;
     });
 
     setSelectedFurniture({
       ...selectedFurniture,
       personId,
-      personName
+      personName,
     });
   };
 
@@ -198,26 +207,22 @@ export default function ChartDetailScreen() {
     setSelectedFurniture({
       ...selectedFurniture,
       personId: undefined,
-      personName: undefined
+      personName: undefined,
     });
   };
-  
+
   const handleDeleteFurniture = (furnitureId: string) => {
-    Alert.alert(
-      'Delete Item',
-      'Are you sure you want to delete this item?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            setFurniture(prev => prev.filter(item => item.id !== furnitureId));
-            setSelectedFurniture(null);
-          },
+    Alert.alert('Delete Item', 'Are you sure you want to delete this item?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          setFurniture((prev) => prev.filter((item) => item.id !== furnitureId));
+          setSelectedFurniture(null);
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleSaveLayout = async () => {
@@ -364,8 +369,8 @@ export default function ChartDetailScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <View style={[styles.content]}>
-        <View style={styles.leftPanel}>
+      <View style={[styles.content, { paddingTop: insets.top }]}>
+        <View style={[styles.leftPanel, { paddingLeft: insets.left }]}>
           <View style={styles.header}>
             <Pressable onPress={() => router.push('/charts')} style={styles.backButton}>
               <ArrowLeft size={24} color={iconColor} />
@@ -377,7 +382,7 @@ export default function ChartDetailScreen() {
           <ChartActions onSave={handleSaveLayout} isSaving={isSaving} />
         </View>
 
-        <View style={styles.rightPanel}>
+        <View style={[styles.rightPanel, { paddingRight: insets.right }]}>
           <FloorPlanEditor
             furniture={furniture}
             onFurnitureUpdate={(updatedFurniture) => {
@@ -387,7 +392,7 @@ export default function ChartDetailScreen() {
             edgePadding={32}
           />
         </View>
-        
+
         {selectedFurniture && (
           <FurnitureDetailPanel
             selectedFurniture={selectedFurniture}
@@ -429,7 +434,10 @@ const styles = StyleSheet.create({
   },
   leftPanel: {
     width: 280,
-    padding: 24,
+    paddingTop: 24,
+    paddingRight: 24,
+    paddingBottom: 24,
+    paddingLeft: 40,
     borderRightWidth: 1,
     borderRightColor: '#ddd',
   },

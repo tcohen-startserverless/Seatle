@@ -1,6 +1,7 @@
 import { StyleSheet, Pressable } from 'react-native';
 import { useTheme, useSpacing, useRadius } from '@/theme';
 import { Plus } from 'lucide-react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface FABProps {
   onPress: () => void;
@@ -10,21 +11,22 @@ export function FAB({ onPress }: FABProps) {
   const { theme } = useTheme();
   const spacing = useSpacing();
   const radius = useRadius();
-  
+  const insets = useSafeAreaInsets();
+
   const backgroundColor = theme.colors.tint;
   const iconColor = theme.colors.background;
 
   return (
-    <Pressable 
+    <Pressable
       style={[
-        styles.fab, 
-        { 
+        styles.fab,
+        {
           backgroundColor,
-          bottom: spacing.md,
-          right: spacing.md,
+          bottom: insets.bottom + spacing.md,
+          right: insets.right + spacing['2xl'],
           borderRadius: radius.full,
-        }
-      ]} 
+        },
+      ]}
       onPress={onPress}
     >
       <Plus size={24} color={iconColor} />

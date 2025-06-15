@@ -6,4 +6,5 @@ export const auth = new sst.aws.Auth('Auth', {
     handler: 'packages/functions/src/auth/index.handler',
     link: [table, email],
   },
+  forceUpgrade: 'v2',
 });

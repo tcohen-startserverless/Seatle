@@ -10,14 +10,18 @@ import { useCreateList } from '@/api/hooks/lists';
 import { TextInput } from '@/components/TextInput';
 import { useForm } from '@tanstack/react-form';
 import * as v from 'valibot';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function CreateListScreen() {
   const router = useRouter();
   const iconColor = useThemeColor({}, 'text');
   const { width: screenWidth } = useWindowDimensions();
-  const contentWidth = Math.min(800, screenWidth - 32);
+  const insets = useSafeAreaInsets();
+  const contentPadding = 16;
+  const availableWidth = screenWidth - insets.left - insets.right - contentPadding * 2;
+  const contentWidth = Math.min(800, availableWidth);
   const createMutation = useCreateList();
-  
+
   const form = useForm({
     defaultValues: {
       name: '',
@@ -35,7 +39,7 @@ export default function CreateListScreen() {
       }
     },
   });
-  
+
   const isSubmitting = createMutation.status === 'pending' || form.state.isSubmitting;
 
   return (
@@ -54,10 +58,10 @@ export default function CreateListScreen() {
             validators={{
               onChange: (field) => {
                 if (!field.value?.trim()) {
-                  return 'Name is required'
+                  return 'Name is required';
                 }
-                return undefined
-              }
+                return undefined;
+              },
             }}
           >
             {(field) => (
@@ -80,9 +84,7 @@ export default function CreateListScreen() {
             )}
           </form.Field>
 
-          <form.Field
-            name="description"
-          >
+          <form.Field name="description">
             {(field) => (
               <View style={styles.formGroup}>
                 <ThemedText style={styles.label}>Description (optional)</ThemedText>
@@ -99,9 +101,9 @@ export default function CreateListScreen() {
             )}
           </form.Field>
 
-          <Button 
-            onPress={() => form.handleSubmit()} 
-            style={styles.button} 
+          <Button
+            onPress={() => form.handleSubmit()}
+            style={styles.button}
             isLoading={isSubmitting}
             disabled={!form.state.canSubmit}
           >

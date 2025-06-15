@@ -17,6 +17,7 @@ import { useCreateAssignment } from '@/api/hooks/assignments';
 import { hasCollision } from '@/utils/furnitureHelpers';
 import { TABLE_SIZES, CHAIR_SIZES } from '@/types/furniture';
 import { FurnitureDetailPanel } from '@/components/charts/FurnitureDetailPanel';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type FurnitureType = 'TABLE' | 'CHAIR';
 
@@ -33,6 +34,7 @@ export default function CreateClassScreen() {
   const { user } = useAuth();
   const createChartMutation = useCreateChart();
   const isCreating = createChartMutation.isPending;
+  const insets = useSafeAreaInsets();
 
   const [furniture, setFurniture] = useState<CustomFurniturePosition[]>([]);
 
@@ -41,14 +43,13 @@ export default function CreateClassScreen() {
 
   const [selectedListId, setSelectedListId] = useState<string>('');
 
-  const [selectedFurniture, setSelectedFurniture] = useState<FurniturePosition | null>(null);
+  const [selectedFurniture, setSelectedFurniture] = useState<FurniturePosition | null>(
+    null
+  );
 
   const { data: listsData } = useListLists();
-  
-  const {
-    data: selectedListData,
-    isLoading: selectedListLoading,
-  } = useGetList({
+
+  const { data: selectedListData, isLoading: selectedListLoading } = useGetList({
     id: selectedListId || '',
   });
 
@@ -83,13 +84,15 @@ export default function CreateClassScreen() {
   };
 
   const handleFurnitureClick = (furnitureId: string) => {
-    const selectedItem = furniture.find(item => item.id === furnitureId);
-    setSelectedFurniture(prev => prev?.id === furnitureId ? null : selectedItem || null);
+    const selectedItem = furniture.find((item) => item.id === furnitureId);
+    setSelectedFurniture((prev) =>
+      prev?.id === furnitureId ? null : selectedItem || null
+    );
   };
 
   const assignPersonToChair = (personId: string, personName: string) => {
     if (!selectedFurniture || selectedFurniture.type !== 'CHAIR') return;
-    
+
     setFurniture((prev) =>
       prev.map((item) => {
         if (item.personId === personId && item.id !== selectedFurniture.id) {
@@ -105,10 +108,10 @@ export default function CreateClassScreen() {
     setSelectedFurniture({
       ...selectedFurniture,
       personId,
-      personName
+      personName,
     });
   };
-  
+
   const removePersonFromChair = () => {
     if (!selectedFurniture || selectedFurniture.type !== 'CHAIR') return;
 
@@ -122,26 +125,22 @@ export default function CreateClassScreen() {
     setSelectedFurniture({
       ...selectedFurniture,
       personId: undefined,
-      personName: undefined
+      personName: undefined,
     });
   };
-  
+
   const handleDeleteFurniture = (furnitureId: string) => {
-    Alert.alert(
-      'Delete Item',
-      'Are you sure you want to delete this item?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            setFurniture(prev => prev.filter(item => item.id !== furnitureId));
-            setSelectedFurniture(null);
-          },
+    Alert.alert('Delete Item', 'Are you sure you want to delete this item?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          setFurniture((prev) => prev.filter((item) => item.id !== furnitureId));
+          setSelectedFurniture(null);
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const selectList = (listId: string) => {
@@ -166,6 +165,7 @@ export default function CreateClassScreen() {
             >
               <Square size={table.size} color="#8B4513" fill="#8B4513" strokeWidth={1} />
             </View>
+            <ThemedText style={styles.furnitureLabel}>Table</ThemedText>
           </Pressable>
         ))}
       </View>
@@ -186,6 +186,7 @@ export default function CreateClassScreen() {
             >
               <Circle size={chair.size} color="#444" fill="#444" strokeWidth={1} />
             </View>
+            <ThemedText style={styles.furnitureLabel}>Chair</ThemedText>
           </Pressable>
         ))}
       </View>
@@ -291,8 +292,13 @@ export default function CreateClassScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <View style={[styles.content]}>
-        <View style={[styles.leftPanel, { borderRightColor: borderColor }]}>
+      <View style={[styles.content, { paddingTop: insets.top }]}>
+        <View
+          style={[
+            styles.leftPanel,
+            { borderRightColor: borderColor, paddingLeft: insets.left },
+          ]}
+        >
           <View style={styles.header}>
             <Pressable onPress={() => router.push('/charts')} style={styles.backButton}>
               <ArrowLeft size={24} color={iconColor} />
@@ -346,7 +352,7 @@ export default function CreateClassScreen() {
           </Pressable>
         </View>
 
-        <View style={styles.rightPanel}>
+        <View style={[styles.rightPanel, { paddingRight: insets.right }]}>
           <FloorPlanEditor
             furniture={furniture}
             onFurnitureUpdate={(updatedFurniture) => {
@@ -355,9 +361,8 @@ export default function CreateClassScreen() {
             edgePadding={32}
             onFurnitureSelect={handleFurnitureClick}
           />
-
         </View>
-        
+
         {selectedFurniture && (
           <FurnitureDetailPanel
             selectedFurniture={selectedFurniture}
@@ -370,8 +375,6 @@ export default function CreateClassScreen() {
           />
         )}
       </View>
-
-
     </ThemedView>
   );
 }
@@ -386,7 +389,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   leftPanel: {
-    padding: 32,
+    paddingTop: 32,
+    paddingRight: 32,
+    paddingBottom: 32,
+    paddingLeft: 48,
     borderRightWidth: StyleSheet.hairlineWidth,
     width: 320,
     display: 'flex',
@@ -439,8 +445,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   furnitureLabel: {
-    fontSize: 14,
+    fontSize: 12,
     alignSelf: 'center',
+    textAlign: 'center',
+    marginTop: 4,
   },
   listContainer: {
     gap: 8,
@@ -464,6 +472,4 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
   },
-
-
 });

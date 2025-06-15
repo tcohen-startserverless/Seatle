@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/theme';
 import { FAB } from '@/components/ui/FAB';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface PersonItem {
   id: string;
@@ -20,7 +21,10 @@ export function PeopleList({ people, width: propWidth }: PeopleListProps) {
   const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
   const { theme } = useTheme();
-  const listWidth = propWidth ?? Math.min(800, screenWidth - 32);
+  const insets = useSafeAreaInsets();
+  const contentPadding = 16;
+  const availableWidth = screenWidth - insets.left - insets.right - contentPadding * 2;
+  const listWidth = propWidth ?? Math.min(800, availableWidth);
   const backgroundColor = theme.colors.primaryRow;
   const alternateBackground = theme.colors.alternateRow;
 

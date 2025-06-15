@@ -27,6 +27,7 @@ export function FurnitureOptions({ onAddFurniture }: FurnitureOptionsProps) {
                   strokeWidth={1}
                 />
               </View>
+              <ThemedText style={styles.furnitureLabel}>Table</ThemedText>
             </Pressable>
           ))}
         </View>
@@ -44,6 +45,7 @@ export function FurnitureOptions({ onAddFurniture }: FurnitureOptionsProps) {
               <View style={styles.furniturePreview}>
                 <Circle size={chair.size / 2} color="#444" fill="#444" strokeWidth={1} />
               </View>
+              <ThemedText style={styles.furnitureLabel}>Chair</ThemedText>
             </Pressable>
           ))}
         </View>
@@ -56,6 +58,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginBottom: 16,
+    paddingLeft: 16,
   },
   furnitureSection: {
     marginBottom: 24,
@@ -82,5 +85,6 @@ const styles = StyleSheet.create({
   },
   furnitureLabel: {
     fontSize: 12,
+    textAlign: 'center',
   },
 });

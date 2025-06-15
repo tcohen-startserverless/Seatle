@@ -14,6 +14,7 @@ import { useListLists } from '@/api/hooks/lists';
 import { ListChecks } from 'lucide-react';
 import { useThemeColor, useSpacing, useRadius } from '@/theme';
 import { useState, useEffect } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function ListsSkeleton({ contentWidth }: { contentWidth: number }) {
   const skeletonColor = useThemeColor({}, 'border');
@@ -99,7 +100,10 @@ export default function ListsScreen() {
   const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
   const spacing = useSpacing();
-  const contentWidth = Math.min(1200, screenWidth - spacing.xl);
+  const insets = useSafeAreaInsets();
+  const contentPadding = 16;
+  const availableWidth = screenWidth - insets.left - insets.right - contentPadding * 2;
+  const contentWidth = Math.min(1200, availableWidth);
   const iconColor = useThemeColor({}, 'text');
   const cardBackground = useThemeColor({}, 'card');
   const [isFirstLoad, setIsFirstLoad] = useState(true);
@@ -130,6 +134,8 @@ export default function ListsScreen() {
           </View>
           <ThemedText>Error loading lists</ThemedText>
         </View>
+
+        <FAB onPress={() => router.push('/lists/create')} />
       </ThemedView>
     );
   }
@@ -199,9 +205,9 @@ export default function ListsScreen() {
         </View>
 
         {renderList()}
-
-        <FAB onPress={() => router.push('/lists/create')} />
       </View>
+
+      <FAB onPress={() => router.push('/lists/create')} />
     </ThemedView>
   );
 }

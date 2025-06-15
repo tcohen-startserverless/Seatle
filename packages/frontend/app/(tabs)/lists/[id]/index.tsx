@@ -32,6 +32,7 @@ import type { PersonItem } from '@seater/core/person';
 import { Animated, Easing } from 'react-native';
 import { TextInput } from '@/components/TextInput';
 import { useForm } from '@tanstack/react-form';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const isWeb = Platform.OS === 'web';
 
@@ -338,7 +339,10 @@ export default function ListDetailScreen() {
   const cardBackground = useThemeColor({}, 'card');
   const backgroundColor = useThemeColor({}, 'background');
   const { width: screenWidth } = useWindowDimensions();
-  const contentWidth = Math.min(isWeb ? 1200 : 800, screenWidth - 32);
+  const insets = useSafeAreaInsets();
+  const contentPadding = 16;
+  const availableWidth = screenWidth - insets.left - insets.right - contentPadding * 2;
+  const contentWidth = Math.min(isWeb ? 1200 : 800, availableWidth);
 
   const [addPersonModalVisible, setAddPersonModalVisible] = useState(false);
   const [editPersonModalVisible, setEditPersonModalVisible] = useState(false);
