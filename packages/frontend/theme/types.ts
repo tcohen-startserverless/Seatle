@@ -4,16 +4,17 @@ export interface ColorPalette {
   tint: string;
   icon: string;
   border: string;
-  
+
   tabIconDefault: string;
   tabIconSelected: string;
   primaryRow: string;
   alternateRow: string;
   card: string;
+  sidebar: string;
   inputBackground: string;
   placeholderText: string;
   inputText: string;
-  
+
   success: string;
   warning: string;
   error: string;

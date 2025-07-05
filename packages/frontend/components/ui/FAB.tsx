@@ -2,6 +2,7 @@ import { StyleSheet, Pressable } from 'react-native';
 import { useTheme, useSpacing, useRadius } from '@/theme';
 import { Plus } from 'lucide-react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAdaptiveDesign } from '@/hooks/useAdaptiveDesign';
 
 interface FABProps {
   onPress: () => void;
@@ -12,9 +13,22 @@ export function FAB({ onPress }: FABProps) {
   const spacing = useSpacing();
   const radius = useRadius();
   const insets = useSafeAreaInsets();
+  const { navigationStyle, touchFirst } = useAdaptiveDesign();
 
   const backgroundColor = theme.colors.tint;
   const iconColor = theme.colors.background;
+
+  // Calculate bottom position accounting for tab bar on mobile
+  const getBottomPosition = () => {
+    const baseBottom = insets.bottom + spacing.md;
+
+    // Add tab bar height on mobile (60px + safe area)
+    if (navigationStyle === 'bottom-tabs') {
+      return baseBottom + 60; // Tab bar height
+    }
+
+    return baseBottom;
+  };
 
   return (
     <Pressable
@@ -22,7 +36,7 @@ export function FAB({ onPress }: FABProps) {
         styles.fab,
         {
           backgroundColor,
-          bottom: insets.bottom + spacing.md,
+          bottom: getBottomPosition(),
           right: insets.right + spacing['2xl'],
           borderRadius: radius.full,
         },
