@@ -31,7 +31,7 @@ export default function LoginScreen() {
           Welcome to Seatle
         </ThemedText>
         <ThemedText style={styles.subtitle}>
-          Sign in to manage your classroom seating charts
+          Sign in to manage your seating charts
         </ThemedText>
 
         {error && (

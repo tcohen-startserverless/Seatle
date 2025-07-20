@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useAdaptiveDesign } from '@/hooks/useAdaptiveDesign';
 import { useSpacing } from '@/theme';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 // Calculate columns purely based on available space
 const calculateColumnsFromSpace = (
@@ -134,7 +135,9 @@ export function AdaptiveGrid<T>({
     density,
     touchFirst,
     navigationStyle,
+    screenWidth,
   } = useAdaptiveDesign();
+  const tabBarHeight = useBottomTabBarHeight();
 
   // Use prop availableWidth if provided, otherwise use hook value
   const availableWidth = propAvailableWidth ?? hookAvailableWidth;
@@ -284,9 +287,13 @@ export function AdaptiveGrid<T>({
       // Add space for FAB
       bottomPadding += 80;
 
-      // Add extra space for bottom tab bar
-      if (navigationStyle === 'bottom-tabs') {
-        bottomPadding += 60; // Tab bar height
+      // Treat medium screens like mobile - add tab bar height
+      if (
+        navigationStyle === 'bottom-tabs' ||
+        isTablet ||
+        (screenWidth >= 768 && screenWidth <= 1200)
+      ) {
+        bottomPadding += tabBarHeight; // Actual tab bar height
       }
     }
 

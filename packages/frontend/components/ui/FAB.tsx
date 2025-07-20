@@ -3,6 +3,7 @@ import { useTheme, useSpacing, useRadius } from '@/theme';
 import { Plus } from 'lucide-react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAdaptiveDesign } from '@/hooks/useAdaptiveDesign';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 interface FABProps {
   onPress: () => void;
@@ -13,20 +14,29 @@ export function FAB({ onPress }: FABProps) {
   const spacing = useSpacing();
   const radius = useRadius();
   const insets = useSafeAreaInsets();
-  const { navigationStyle, touchFirst } = useAdaptiveDesign();
+  const { navigationStyle, touchFirst, isTablet, screenWidth } = useAdaptiveDesign();
+
+  // Always call hook (React rules) but only use value for bottom tabs
+  const rawTabBarHeight = useBottomTabBarHeight();
+  const tabBarHeight = navigationStyle === 'bottom-tabs' ? rawTabBarHeight : 0;
 
   const backgroundColor = theme.colors.tint;
   const iconColor = theme.colors.background;
 
-  // Calculate bottom position accounting for tab bar on mobile
+  // Calculate bottom position accounting for navigation style
   const getBottomPosition = () => {
     const baseBottom = insets.bottom + spacing.md;
 
-    // Add tab bar height on mobile (60px + safe area)
-    if (navigationStyle === 'bottom-tabs') {
-      return baseBottom + 60; // Tab bar height
+    // Treat medium screens like mobile - use bottom tabs positioning
+    if (
+      navigationStyle === 'bottom-tabs' ||
+      isTablet ||
+      (screenWidth >= 768 && screenWidth <= 1200)
+    ) {
+      return baseBottom + tabBarHeight - insets.bottom; // Tab bar height minus safe area (already included in baseBottom)
     }
 
+    // For desktop sidebar navigation, use base position
     return baseBottom;
   };
 

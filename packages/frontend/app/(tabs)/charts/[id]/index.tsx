@@ -4,7 +4,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/theme';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus, X } from 'lucide-react';
+import { FAB } from '@/components/ui/FAB';
+
 import { FloorPlanEditor } from '@/components/FloorPlanEditor';
 import { useGetChart, useUpdateChartLayout } from '@/api/hooks/charts';
 import { useGetList } from '@/api/hooks/lists';
@@ -14,6 +16,8 @@ import { FurnitureOptions } from '@/components/charts/FurnitureOptions';
 import { FurnitureDetailPanel } from '@/components/charts/FurnitureDetailPanel';
 import { ChartActions } from '@/components/charts/ChartActions';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useResponsiveInfo } from '@/utils/responsive';
+import { useAdaptiveDesign } from '@/hooks/useAdaptiveDesign';
 
 export default function ChartDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -29,10 +33,14 @@ export default function ChartDetailScreen() {
   } = useGetChart({ id: id || '' });
 
   const updateLayoutMutation = useUpdateChartLayout();
+  const responsiveInfo = useResponsiveInfo();
+  const { contentWidth, availableWidth } = useAdaptiveDesign();
 
   const [selectedFurniture, setSelectedFurniture] = useState<FurniturePosition | null>(
     null
   );
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [showFurnitureModal, setShowFurnitureModal] = useState(false);
   const backgroundColor = useThemeColor({}, 'background');
 
   const {
@@ -338,6 +346,11 @@ export default function ChartDetailScreen() {
 
   const closeFurniturePanel = () => {
     setSelectedFurniture(null);
+    setShowContextMenu(false);
+  };
+
+  const handleFabPress = () => {
+    setShowFurnitureModal(true);
   };
 
   if (isLoading || !id) {
@@ -369,42 +382,80 @@ export default function ChartDetailScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <View style={[styles.content, { paddingTop: insets.top }]}>
-        <View style={[styles.leftPanel, { paddingLeft: insets.left }]}>
-          <View style={styles.header}>
-            <Pressable onPress={() => router.push('/charts')} style={styles.backButton}>
-              <ArrowLeft size={24} color={iconColor} />
-            </Pressable>
+      <View
+        style={[styles.content, { width: Math.min(contentWidth, availableWidth - 32) }]}
+      >
+        {/* Header */}
+        <View style={[styles.header]}>
+          <Pressable onPress={() => router.push('/charts')} style={styles.backButton}>
+            <ArrowLeft size={24} color={iconColor} />
+          </Pressable>
+          <View style={styles.titleContainer}>
             <ThemedText type="title">{chartData?.name || 'Chart Design'}</ThemedText>
           </View>
-
-          <FurnitureOptions onAddFurniture={handleAddFurniture} />
-          <ChartActions onSave={handleSaveLayout} isSaving={isSaving} />
+          <Pressable
+            style={[styles.saveButton, { backgroundColor: tintColor }]}
+            onPress={handleSaveLayout}
+            disabled={isSaving}
+          >
+            <ThemedText style={styles.saveButtonText}>
+              {isSaving ? 'Saving...' : 'Save'}
+            </ThemedText>
+          </Pressable>
         </View>
 
-        <View style={[styles.rightPanel, { paddingRight: insets.right }]}>
+        {/* Floor Plan Editor */}
+        <View style={styles.editorContainer}>
           <FloorPlanEditor
             furniture={furniture}
             onFurnitureUpdate={(updatedFurniture) => {
               setFurniture(updatedFurniture);
             }}
             onFurnitureSelect={handleFurnitureClick}
-            edgePadding={32}
+            edgePadding={16}
           />
         </View>
 
-        {selectedFurniture && (
-          <FurnitureDetailPanel
-            selectedFurniture={selectedFurniture}
-            onClose={closeFurniturePanel}
-            onDelete={handleDeleteFurniture}
-            people={listData?.people}
-            onAssignPerson={assignPersonToChair}
-            onRemovePerson={removePersonFromChair}
-            isLoading={listLoading}
-          />
-        )}
+        {/* Floating Action Button */}
+        <FAB onPress={handleFabPress} />
       </View>
+
+      {/* Furniture Selection Overlay */}
+      {showFurnitureModal && (
+        <View style={styles.overlayContainer}>
+          <Pressable
+            style={styles.overlayBackdrop}
+            onPress={() => setShowFurnitureModal(false)}
+          />
+          <View style={[styles.overlayContent, { backgroundColor }]}>
+            <View style={styles.overlayHeader}>
+              <ThemedText type="subtitle">Add Furniture</ThemedText>
+              <Pressable onPress={() => setShowFurnitureModal(false)}>
+                <X size={24} color={iconColor} />
+              </Pressable>
+            </View>
+            <FurnitureOptions
+              onAddFurniture={(size, type) => {
+                handleAddFurniture(size, type);
+                setShowFurnitureModal(false);
+              }}
+            />
+          </View>
+        </View>
+      )}
+
+      {/* Furniture detail panel */}
+      {selectedFurniture && (
+        <FurnitureDetailPanel
+          selectedFurniture={selectedFurniture}
+          onClose={closeFurniturePanel}
+          onDelete={handleDeleteFurniture}
+          people={listData?.people}
+          onAssignPerson={assignPersonToChair}
+          onRemovePerson={removePersonFromChair}
+          isLoading={listLoading}
+        />
+      )}
     </ThemedView>
   );
 }
@@ -412,6 +463,11 @@ export default function ChartDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: 'center',
+  },
+  content: {
+    flex: 1,
+    maxWidth: '100%',
   },
   loadingContainer: {
     flex: 1,
@@ -419,30 +475,75 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
   },
-  content: {
-    flex: 1,
-    flexDirection: 'row',
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-    marginBottom: 24,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    minHeight: 60,
   },
   backButton: {
     padding: 8,
+    height: 40,
+    width: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  leftPanel: {
-    width: 280,
-    paddingTop: 24,
-    paddingRight: 24,
-    paddingBottom: 24,
-    paddingLeft: 40,
-    borderRightWidth: 1,
-    borderRightColor: '#ddd',
-  },
-  rightPanel: {
+  titleContainer: {
     flex: 1,
-    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  saveButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: 'white',
+    fontWeight: '600',
+  },
+  editorContainer: {
+    flex: 1,
+  },
+
+  overlayContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1000,
+  },
+  overlayBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  overlayContent: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+    maxHeight: '60%',
+    minHeight: '40%',
+  },
+  overlayHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
   },
 });
